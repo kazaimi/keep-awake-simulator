@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRITICAL_TASK_DAEMON :: HIGH_LOAD_PROCESSING</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="mode-geek">
+
+  <!-- 顶部交互控制栏 (默认吸顶自感应隐藏) -->
+  <header id="control-bar" class="control-bar auto-hide">
+    <div class="control-bar-inner">
+      <!-- 品牌/主状态 -->
+      <div class="brand-group">
+        <div class="system-badge">
+          <span class="pulse-dot"></span>
+          <span class="system-title">CORE_SYS: HIGH_PRIORITY</span>
+        </div>
+        <div id="wake-status" class="wake-indicator" title="双保险屏幕防休眠状态">
+          <svg class="wake-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+          </svg>
+          <span class="wake-text">AWAKE: ACTIVE</span>
+        </div>
+        <div class="uptime-badge" title="当前任务挂机时长">
+          <span class="uptime-label">UPTIME:</span>
+          <span id="uptime-display" class="uptime-val">00:00:00</span>
+        </div>
+      </div>
+
+      <!-- 模式选择器 -->
+      <div class="mode-selector" role="tablist">
+        <button class="mode-btn active" data-mode="llm" role="tab" title="模式 1: 大模型分布式预训练">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+            <rect x="9" y="9" width="6" height="6" />
+            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+          </svg>
+          <span>LLM PRETRAIN</span>
+        </button>
+        <button class="mode-btn" data-mode="devops" role="tab" title="模式 2: 云原生 DevOps & K8s 微服务构建">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+          <span>CI/CD CLOUD</span>
+        </button>
+        <button class="mode-btn" data-mode="cyber" role="tab" title="模式 3: 全球网络安全攻防与态势感知">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span>CYBER DEFENSE</span>
+        </button>
+        <button class="mode-btn" data-mode="quant" role="tab" title="模式 4: 高频量化交易算法与撮合回测">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18h18" />
+            <path d="M18 9l-5 5-4-4-4 4" />
+          </svg>
+          <span>QUANT ALGO</span>
+        </button>
+        <button class="mode-btn" data-mode="word" role="tab" title="模式 5: 微软 Word / Office 365 深度公文方案撰写 (快捷键: 5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          <span>WORD DOCS</span>
+        </button>
+        <button class="mode-btn" data-mode="chatgpt" role="tab" title="模式 6: OpenAI o1-preview 深度思考推理 (快捷键: 6)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/>
+            <path d="M12 6v6l4 2"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+          <span>CHATGPT o1</span>
+        </button>
+      </div>
+
+      <!-- 实用控制选项 -->
+      <div class="actions-group">
+        <!-- 速率切换 -->
+        <div class="speed-toggle-wrap" title="日志与算力推进速率">
+          <span class="ctrl-label">SPEED:</span>
+          <button id="speed-btn" class="speed-btn" data-speed="1">1x NORMAL</button>
+        </div>
+
+        <!-- 音效开关 -->
+        <button id="sound-btn" class="icon-btn" title="切换极客音效 (键盘打字/微滴答音)" aria-label="音效">
+          <svg id="sound-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <line x1="23" y1="9" x2="17" y2="15" />
+            <line x1="17" y1="9" x2="23" y2="15" />
+          </svg>
+          <svg id="sound-on-icon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+        </button>
+
+        <!-- 锁定控制栏常驻 -->
+        <button id="pin-btn" class="icon-btn" title="固定控制栏 / 自动隐藏" aria-label="固定顶栏">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 17v5M5 12V7a5 5 0 0 1 10 0v5l2 3H3l2-3z" />
+          </svg>
+        </button>
+
+        <!-- 老板键 (快捷键: 空格) -->
+        <button id="boss-btn" class="boss-key-btn" title="一键切换为 Q3 业务财务报表 (快捷键: 空格)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M3 9h18M9 21V9" />
+          </svg>
+          <span>BOSS KEY (Space)</span>
+        </button>
+
+        <!-- 全屏切换 (快捷键: F11 / 双击屏幕) -->
+        <button id="fullscreen-btn" class="icon-btn" title="全屏沉浸模式 (F11 或双击空白处)">
+          <svg id="enter-fs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
+          <svg id="exit-fs-icon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+          </svg>
+        </button>
+
+        <!-- 退出后端服务 -->
+        <button id="exit-btn" class="icon-btn danger" title="关闭并恢复电脑休眠">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <!-- 顶部滑入提示细条 (收起时显示微弱发光线) -->
+    <div class="hover-trigger-bar" title="将鼠标移到此处展开控制台"></div>
+  </header>
+
+  <!-- ================================================================= -->
+  <!-- 极客主界面容器 (包含4套忙碌模式) -->
+  <!-- ================================================================= -->
+  <main id="geek-container" class="geek-container">
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- MODE 1: 大语言模型分布式预训练 (LLM PRETRAIN) -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="panel-llm" class="mode-panel active">
+      <div class="panel-header-bar">
+        <div class="ph-left">
+          <span class="cluster-tag">DISTRIBUTED CLUSTER :: TENSOR-PARALLEL-8</span>
+          <span class="meta-item">MODEL: <strong class="glow-cyan">Llama-3-70B-MoE-Instruct</strong></span>
+          <span class="meta-item">ZERO: <strong>ZeRO-Stage-3 (Offload-NVMe)</strong></span>
+          <span class="meta-item">PRECISION: <strong class="glow-green">bfloat16 + FP8 Matrix</strong></span>
+        </div>
+        <div class="ph-right">
+          <span class="ph-chip">NCCL: RING-ALLREDUCE 800Gbps</span>
+          <span class="ph-chip">GLOBAL BATCH: 2048</span>
+          <span id="llm-step-counter" class="ph-chip highlight">STEP: 18,452 / 60,000 (30.7%)</span>
+        </div>
+      </div>
+
+      <!-- 上半部：GPU 矩阵与训练指标核心看板 -->
+      <div class="grid-top-llm">
+        <!-- 8 卡 GPU 阵列实时监控网格 -->
+        <div class="card gpu-matrix-card">
+          <div class="card-title">
+            <span>NVIDIA H100 SXM5 80GB CLUSTER HIERARCHY</span>
+            <span class="card-badge">8 NODES ONLINE</span>
+          </div>
+          <div id="gpu-grid" class="gpu-grid">
+            <!-- 由 JS 动态填充 8 张卡的状态与波形 -->
+          </div>
+        </div>
+
+        <!-- 训练核心指标仪表盘 -->
+        <div class="card metrics-card">
+          <div class="card-title">
+            <span>TRAINING TELEMETRY & CONVERGENCE</span>
+            <span class="card-status live">LIVE TELEMETRY</span>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <span class="m-label">THROUGHPUT</span>
+              <span class="m-value glow-green" id="m-throughput">24,850</span>
+              <span class="m-unit">tokens / sec</span>
+              <div class="m-sub">TFLOPS: 3.14 PFLOPS (64.2% MFU)</div>
+            </div>
+            <div class="metric-item">
+              <span class="m-label">TRAIN LOSS</span>
+              <span class="m-value glow-cyan" id="m-loss">1.4820</span>
+              <span class="m-unit">Smooth Step</span>
+              <div class="m-sub">Min Loss: 1.4795 | Delta: -0.0012</div>
+            </div>
+            <div class="metric-item">
+              <span class="m-label">LEARNING RATE</span>
+              <span class="m-value" id="m-lr">2.45e-05</span>
+              <span class="m-unit">Cosine Decay</span>
+              <div class="m-sub">Warmup: 2,000 steps finished</div>
+            </div>
+            <div class="metric-item">
+              <span class="m-label">GRADIENT NORM</span>
+              <span class="m-value glow-amber" id="m-grad">0.842</span>
+              <span class="m-unit">Clip Max: 1.00</span>
+              <div class="m-sub">Inf/NaN Occurrences: 0</div>
+            </div>
+          </div>
+
+          <!-- 实时 Loss 衰减折线图 -->
+          <div class="chart-container">
+            <div class="chart-header">
+              <span class="ch-title">DYNAMIC LOSS / PERPLEXITY CONVERGENCE CURVE</span>
+              <div class="ch-legend">
+                <span class="leg-item"><span class="leg-box leg-loss"></span> Train Loss</span>
+                <span class="leg-item"><span class="leg-box leg-eval"></span> Val Perplexity</span>
+              </div>
+            </div>
+            <canvas id="loss-canvas" class="loss-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 下半部：高速滚动训练控制台终端 -->
+      <div class="card terminal-card">
+        <div class="terminal-bar">
+          <div class="term-dots">
+            <span class="tdot red"></span>
+            <span class="tdot yellow"></span>
+            <span class="tdot green"></span>
+          </div>
+          <div class="term-title">torchrun -m torch.distributed.run --nproc_per_node=8 train_clm.py</div>
+          <div class="term-actions">
+            <span id="scroll-state-llm" class="scroll-badge">AUTO-SCROLL</span>
+            <button class="term-btn" onclick="copyLogs('log-stream-llm')">COPY</button>
+            <button class="term-btn" onclick="clearLogs('log-stream-llm')">CLEAR</button>
+          </div>
+        </div>
+        <div id="log-stream-llm" class="log-stream terminal-font">
+          <!-- 实时日志行流 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- MODE 2: 云原生 DevOps & 大型微服务构建发布 (CI/CD CLOUD) -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="panel-devops" class="mode-panel">
+      <div class="panel-header-bar">
+        <div class="ph-left">
+          <span class="cluster-tag">PIPELINE :: RUN #84920 [PROD-ROLLOUT]</span>
+          <span class="meta-item">TARGET: <strong class="glow-cyan">AWS EKS / eu-central-1 (Multi-AZ)</strong></span>
+          <span class="meta-item">COMMIT: <strong class="glow-amber">feat/high-concurrency-kernel-bypass (39c80d4)</strong></span>
+        </div>
+        <div class="ph-right">
+          <span class="ph-chip">RUNNER: 32 vCPU High-Mem</span>
+          <span class="ph-chip">TEST SUITE: 4,120 Passed</span>
+          <span class="ph-chip highlight">STAGE: DEPLOYING 4/5</span>
+        </div>
+      </div>
+
+      <!-- 上部分割：管道流水线阶段状态 + Kubernetes Pods 矩阵 -->
+      <div class="grid-top-devops">
+        <!-- CI/CD 流水线多阶段进度面板 -->
+        <div class="card devops-pipeline-card">
+          <div class="card-title">
+            <span>MULTI-STAGE BUILD & ARTIFACT COMPILATION</span>
+            <span class="card-badge">BUILDKIT ENGINE v0.13.1</span>
+          </div>
+          <div class="pipeline-stages">
+            <div class="stage-step completed">
+              <div class="step-icon">✓</div>
+              <div class="step-body">
+                <div class="st-name">1. Dependency Resolution & Audit</div>
+                <div class="st-detail">Cargo.lock & Go module cache hit (100%) - 1.2s</div>
+              </div>
+            </div>
+            <div class="stage-step completed">
+              <div class="step-icon">✓</div>
+              <div class="step-body">
+                <div class="st-name">2. Parallel Core Compilation (Rust + C++20)</div>
+                <div class="st-detail">LLVM LTO optimized target release (18.4s)</div>
+              </div>
+            </div>
+            <div class="stage-step in-progress">
+              <div class="step-icon spinning">⟳</div>
+              <div class="step-body">
+                <div class="st-name">3. Distributed Unit & Integration Test Grid</div>
+                <div class="st-detail" id="test-counter-text">Running 128 parallel test threads... (3,982/4,120)</div>
+                <div class="progress-bar-wrap">
+                  <div id="test-progress-fill" class="progress-bar-fill" style="width: 88%;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="stage-step waiting">
+              <div class="step-icon">○</div>
+              <div class="step-body">
+                <div class="st-name">4. Container Layer Security Scan & Signing</div>
+                <div class="st-detail">Cosign KMS key verification & Trivy 0 CVE threshold</div>
+              </div>
+            </div>
+            <div class="stage-step waiting">
+              <div class="step-icon">○</div>
+              <div class="step-body">
+                <div class="st-name">5. Canary Progressive Traffic Rollout (Istio Mesh)</div>
+                <div class="st-detail">0% → 10% → 50% → 100% Zero-downtime rolling update</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kubernetes Pod 拓扑与并发测试方阵 -->
+        <div class="card k8s-matrix-card">
+          <div class="card-title">
+            <span>K8S SERVICE CLUSTER (PROD-MESH) & CONCURRENCY MATRIX</span>
+            <span class="card-badge">NAMESPACE: core-engine</span>
+          </div>
+          <div class="k8s-pod-list" id="k8s-pod-list">
+            <!-- 动态生成 Pod 列表 -->
+          </div>
+          <div class="test-matrix-header">
+            <span>INTEGRATION SUITE SHARDS (256 WORKERS)</span>
+            <span class="green-stat">99.98% PASS</span>
+          </div>
+          <div class="test-dots-grid" id="test-dots-grid">
+            <!-- 动态生成 80 个微型测试执行状态点 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 下部分：DevOps 构建终端日志 -->
+      <div class="card terminal-card">
+        <div class="terminal-bar">
+          <div class="term-dots">
+            <span class="tdot red"></span>
+            <span class="tdot yellow"></span>
+            <span class="tdot green"></span>
+          </div>
+          <div class="term-title">github-runner-linux-x64-worker-09 :: /opt/ci/executor.sh</div>
+          <div class="term-actions">
+            <span id="scroll-state-devops" class="scroll-badge">AUTO-SCROLL</span>
+            <button class="term-btn" onclick="copyLogs('log-stream-devops')">COPY</button>
+            <button class="term-btn" onclick="clearLogs('log-stream-devops')">CLEAR</button>
+          </div>
+        </div>
+        <div id="log-stream-devops" class="log-stream terminal-font"></div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- MODE 3: 全球网络安全攻防与态势感知 (CYBER DEFENSE) -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="panel-cyber" class="mode-panel">
+      <div class="panel-header-bar">
+        <div class="ph-left">
+          <span class="cluster-tag threat">DEFCON 2 :: ACTIVE THREAT INTERCEPT</span>
+          <span class="meta-item">SOC NODE: <strong class="glow-red">GLOBAL-GRID-SIEM-ALPHA</strong></span>
+          <span class="meta-item">HONEYPOT: <strong class="glow-cyan">48 Trap Nodes Engaged</strong></span>
+        </div>
+        <div class="ph-right">
+          <span class="ph-chip danger">BLOCKED ATTACKS: 142,891</span>
+          <span class="ph-chip">FILTER: eBPF XDP DROP</span>
+          <span class="ph-chip highlight">ZERO-DAY SIGNATURE MATCHING</span>
+        </div>
+      </div>
+
+      <!-- 上半部分：雷达扫描 Canvas + 实时 Hex 内存转储与攻击源分析 -->
+      <div class="grid-top-cyber">
+        <!-- 雷达扫描与地理节点感知 -->
+        <div class="card radar-card">
+          <div class="card-title">
+            <span>PERIMETER RADAR & ANOMALY DETECTION</span>
+            <span class="card-badge red">SWEEP: 360° ACTIVE</span>
+          </div>
+          <div class="radar-canvas-wrap">
+            <canvas id="radar-canvas" class="radar-canvas"></canvas>
+            <div class="radar-overlay-stats">
+              <div>AZIMUTH: <span id="radar-azimuth">184.2°</span></div>
+              <div>TARGETS: <span id="radar-targets" class="glow-red">14 TRACKED</span></div>
+              <div>PING: <strong>1.4ms</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hex 内存封包分析与嗅探 -->
+        <div class="card hex-dump-card">
+          <div class="card-title">
+            <span>RAW PACKET PAYLOAD INSPECTION (DEEP PACKET DUMP)</span>
+            <span class="card-badge">INTERFACE: eth0 (PROMISCUOUS)</span>
+          </div>
+          <div class="hex-stats-bar">
+            <span>PROTO: TCP/SYN-FLOOD</span>
+            <span>LEN: 1420 bytes</span>
+            <span class="glow-amber">PAYLOAD CHECKSUM: 0x88EF [VALID]</span>
+          </div>
+          <div id="hex-dump-stream" class="hex-dump-stream terminal-font">
+            <!-- 动态生成 16 进制 Dump 流 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 下半部：入侵防御与日志终端 -->
+      <div class="card terminal-card">
+        <div class="terminal-bar">
+          <div class="term-dots">
+            <span class="tdot red"></span>
+            <span class="tdot yellow"></span>
+            <span class="tdot green"></span>
+          </div>
+          <div class="term-title">suricata-ips-engine --af-packet=eth0 -c /etc/suricata/suricata.yaml</div>
+          <div class="term-actions">
+            <span id="scroll-state-cyber" class="scroll-badge">AUTO-SCROLL</span>
+            <button class="term-btn" onclick="copyLogs('log-stream-cyber')">COPY</button>
+            <button class="term-btn" onclick="clearLogs('log-stream-cyber')">CLEAR</button>
+          </div>
+        </div>
+        <div id="log-stream-cyber" class="log-stream terminal-font"></div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- MODE 4: 高频量化交易算法与撮合回测 (QUANT ALGO) -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="panel-quant" class="mode-panel">
+      <div class="panel-header-bar">
+        <div class="ph-left">
+          <span class="cluster-tag">HFT ENGINE :: SUB-MICROSECOND MATCHING</span>
+          <span class="meta-item">SYMBOL: <strong class="glow-cyan">BTC/USDT (PERP)</strong></span>
+          <span class="meta-item">ORDER ROUTER: <strong class="glow-green">FPGA Kernel Bypass (Solarflare)</strong></span>
+        </div>
+        <div class="ph-right">
+          <span class="ph-chip">LATENCY: 8.42 μs</span>
+          <span class="ph-chip highlight">SHARPE: 3.84</span>
+          <span class="ph-chip glow-green">DAILY PnL: +$241,890.20</span>
+        </div>
+      </div>
+
+      <!-- 上半部：实时跳动 K 线图与 Order Book 盘口 -->
+      <div class="grid-top-quant">
+        <!-- 实时 K 线与移动平均线图表 -->
+        <div class="card kline-card">
+          <div class="card-title">
+            <div class="kline-meta-head">
+              <span class="sym-name">BTC-USDT HIGH-FREQ TICKS</span>
+              <span class="sym-price glow-green" id="quant-cur-price">$68,421.50</span>
+              <span class="sym-change glow-green" id="quant-cur-change">+4.82%</span>
+            </div>
+            <div class="kline-indicators">
+              <span class="ind-tag ma7">MA7: 68,390</span>
+              <span class="ind-tag ma25">MA25: 68,240</span>
+              <span class="ind-tag vol">VOL: 18,940 BTC</span>
+            </div>
+          </div>
+          <div class="chart-container-kline">
+            <canvas id="kline-canvas" class="kline-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Level-2 深度订单簿与高频指标 -->
+        <div class="card orderbook-card">
+          <div class="card-title">
+            <span>LEVEL 2 ORDER BOOK (MATCHING CORE)</span>
+            <span class="card-badge">TICK SPREAD: $0.10</span>
+          </div>
+          <!-- 盘口卖单 Asks -->
+          <div class="ob-section asks" id="ob-asks">
+            <!-- 动态生成 5-6 行卖单 -->
+          </div>
+          <!-- 当前成交中轴价 -->
+          <div class="ob-mid-price">
+            <span class="mid-val glow-green" id="ob-mid-val">68,421.50 ↑</span>
+            <span class="mid-sub">Index: 68,420.90 | Mark: 68,421.10</span>
+          </div>
+          <!-- 盘口买单 Bids -->
+          <div class="ob-section bids" id="ob-bids">
+            <!-- 动态生成 5-6 行买单 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 下半部：高频撮合成交流水 Tape 与策略执行终端 -->
+      <div class="card terminal-card">
+        <div class="terminal-bar">
+          <div class="term-dots">
+            <span class="tdot red"></span>
+            <span class="tdot yellow"></span>
+            <span class="tdot green"></span>
+          </div>
+          <div class="term-title">quant-execution-daemon --strategy=market_maker_alpha_v4 --exchange=binance_cme</div>
+          <div class="term-actions">
+            <span id="scroll-state-quant" class="scroll-badge">AUTO-SCROLL</span>
+            <button class="term-btn" onclick="copyLogs('log-stream-quant')">COPY</button>
+            <button class="term-btn" onclick="clearLogs('log-stream-quant')">CLEAR</button>
+          </div>
+        </div>
+        <div id="log-stream-quant" class="log-stream terminal-font"></div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- MODE 5: 真实微软 Word / Office 365 深度文档撰写 (WORD DOCS) -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="panel-word" class="mode-panel word-panel">
+      <!-- 1. Word 顶部标题栏 (Office Blue) -->
+      <div class="word-titlebar">
+        <div class="wt-left">
+          <!-- Office Word 图标 -->
+          <div class="wt-app-icon" title="Microsoft Word">
+            <svg viewBox="0 0 24 24" class="wt-w-svg">
+              <rect width="24" height="24" rx="4" fill="#103f91"/>
+              <path d="M5 6.5h3.2l2.2 8.3 2.1-8.3h2.8l2.1 8.3 2.2-8.3h3.2l-3.6 11h-3.4l-2.1-7.8-2.1 7.8H8.6L5 6.5z" fill="#ffffff"/>
+            </svg>
+          </div>
+          <!-- 自动保存开关 -->
+          <div class="wt-autosave" title="自动保存到 OneDrive - 已开启">
+            <span class="wt-as-text">自动保存</span>
+            <div class="wt-toggle-switch active">
+              <div class="wt-toggle-thumb"></div>
+            </div>
+          </div>
+          <!-- 快捷操作：保存、撤销、恢复 -->
+          <button class="wt-quick-btn" title="保存 (Ctrl+S)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+          </button>
+          <button class="wt-quick-btn" title="撤消 (Ctrl+Z)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7v6h6"/>
+              <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+            </svg>
+          </button>
+          <button class="wt-quick-btn disabled" title="恢复 (Ctrl+Y)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 7v6h-6"/>
+              <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 居中：文档标题 & 搜索框 -->
+        <div class="wt-center">
+          <div class="wt-doc-title">
+            <span class="wt-filename" id="word-doc-title-text">2026年度业务发展规划与数字化组织协同机制实施细则.docx</span>
+            <span class="wt-save-badge" id="word-top-save-status">- 已保存到 OneDrive</span>
+          </div>
+          <div class="wt-search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="搜索 (Alt+Q)" readonly />
+          </div>
+        </div>
+
+        <!-- 右侧：暂停打字控制、批注、共享、用户信息与窗口控制 -->
+        <div class="wt-right">
+          <button id="word-pause-btn" class="wt-action-pill pause-ctrl-pill" title="一键暂停/继续打字 (快捷键: X 或 Ctrl+P)">
+            <span id="wpt-icon">⏸️</span>
+            <span id="wpt-text">暂停打字</span>
+          </button>
+          <button class="wt-action-pill" title="查看所有批注">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>批注</span>
+          </button>
+          <button class="wt-action-pill highlight" title="共享此文档">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+            <span>共享</span>
+          </button>
+          <div class="wt-avatar" title="当前登录账户：Alex Xu (战略规划部总监)">
+            <span>徐</span>
+            <span class="wt-avatar-status"></span>
+          </div>
+          <div class="wt-win-controls">
+            <span class="wt-win-btn" title="最小化">─</span>
+            <span class="wt-win-btn" title="向下还原">❐</span>
+            <span class="wt-win-btn close" title="关闭">✕</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Word Ribbon 菜单栏 (功能区选项卡 + 现代化工具栏) -->
+      <div class="word-ribbon">
+        <!-- 选项卡 Tabs -->
+        <div class="word-tabs">
+          <div class="w-tab file-tab">文件</div>
+          <div class="w-tab active">开始</div>
+          <div class="w-tab">插入</div>
+          <div class="w-tab">绘图</div>
+          <div class="w-tab">设计</div>
+          <div class="w-tab">布局</div>
+          <div class="w-tab">引用</div>
+          <div class="w-tab">审阅</div>
+          <div class="w-tab">视图</div>
+          <div class="w-tab">帮助</div>
+          <div class="w-tab-spacer"></div>
+          <div class="w-tab-action" title="折叠功能区">︿</div>
+        </div>
+
+        <!-- 详细工具命令区 -->
+        <div class="word-toolbar">
+          <!-- 剪贴板组 -->
+          <div class="wt-group wt-group-clipboard">
+            <div class="wt-clipboard-paste" title="粘贴 (Ctrl+V)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+              </svg>
+              <span>粘贴 ▾</span>
+            </div>
+            <div class="wt-clipboard-sub">
+              <button class="wt-tb-btn" title="剪切 (Ctrl+X)">✂</button>
+              <button class="wt-tb-btn" title="复制 (Ctrl+C)">⎘</button>
+              <button class="wt-tb-btn" title="格式刷">🖌️</button>
+            </div>
+            <span class="wt-group-label">剪贴板</span>
+          </div>
+
+          <div class="wt-separator"></div>
+
+          <!-- 字体组 -->
+          <div class="wt-group wt-group-font">
+            <div class="wt-row">
+              <div class="wt-select-box font-family" title="选择字体">
+                <span>微软雅黑</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <div class="wt-select-box font-size" title="字号">
+                <span>12</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <button class="wt-tb-btn" title="增大字号">A^</button>
+              <button class="wt-tb-btn" title="减小字号">Av</button>
+              <button class="wt-tb-btn" title="清除所有格式">A⌫</button>
+            </div>
+            <div class="wt-row">
+              <button class="wt-tb-btn bold active" title="加粗 (Ctrl+B)">B</button>
+              <button class="wt-tb-btn italic" title="倾斜 (Ctrl+I)">I</button>
+              <button class="wt-tb-btn underline" title="下划线 (Ctrl+U)"><u>U</u>▾</button>
+              <button class="wt-tb-btn strikethrough" title="删除线"><s>ab</s></button>
+              <button class="wt-tb-btn sub" title="下标">X₂</button>
+              <button class="wt-tb-btn sup" title="上标">X²</button>
+              <button class="wt-tb-btn highlight-btn" title="文本突出显示颜色">
+                <span style="border-bottom: 3px solid #ffeb3b;">ab</span>▾
+              </button>
+              <button class="wt-tb-btn color-btn" title="字体颜色">
+                <span style="border-bottom: 3px solid #d83b01; font-weight: bold;">A</span>▾
+              </button>
+            </div>
+            <span class="wt-group-label">字体</span>
+          </div>
+
+          <div class="wt-separator"></div>
+
+          <!-- 段落组 -->
+          <div class="wt-group wt-group-para">
+            <div class="wt-row">
+              <button class="wt-tb-btn" title="项目符号">•≡▾</button>
+              <button class="wt-tb-btn" title="编号">1.≡▾</button>
+              <button class="wt-tb-btn" title="多级列表">1.1≡▾</button>
+              <button class="wt-tb-btn" title="减少缩进">⇤</button>
+              <button class="wt-tb-btn" title="增加缩进">⇥</button>
+              <button class="wt-tb-btn" title="显示/隐藏段落标记">¶</button>
+            </div>
+            <div class="wt-row">
+              <button class="wt-tb-btn" title="左对齐">≡</button>
+              <button class="wt-tb-btn" title="居中">≣</button>
+              <button class="wt-tb-btn" title="右对齐">⫷</button>
+              <button class="wt-tb-btn active" title="两端对齐">☰</button>
+              <button class="wt-tb-btn" title="行距与段落间距">↕≡▾</button>
+              <button class="wt-tb-btn" title="底纹">🪣▾</button>
+              <button class="wt-tb-btn" title="下框线">⊞▾</button>
+            </div>
+            <span class="wt-group-label">段落</span>
+          </div>
+
+          <div class="wt-separator"></div>
+
+          <!-- 样式库卡片 -->
+          <div class="wt-group wt-group-styles">
+            <div class="wt-styles-rack">
+              <div class="wt-style-card active" title="正文样式">
+                <span class="sc-preview">AaBbCc</span>
+                <span class="sc-name">正文</span>
+              </div>
+              <div class="wt-style-card" title="无间隔样式">
+                <span class="sc-preview">AaBbCc</span>
+                <span class="sc-name">无间隔</span>
+              </div>
+              <div class="wt-style-card heading-1" title="标题 1 样式">
+                <span class="sc-preview">AaBbCc</span>
+                <span class="sc-name">标题 1</span>
+              </div>
+              <div class="wt-style-card heading-2" title="标题 2 样式">
+                <span class="sc-preview">AaBbCc</span>
+                <span class="sc-name">标题 2</span>
+              </div>
+              <div class="wt-style-card subtitle" title="副标题样式">
+                <span class="sc-preview">AaBbCc</span>
+                <span class="sc-name">副标题</span>
+              </div>
+            </div>
+            <div class="wt-styles-arrows">
+              <button class="sa-btn">▲</button>
+              <button class="sa-btn">▼</button>
+              <button class="sa-btn">▾</button>
+            </div>
+            <span class="wt-group-label">样式</span>
+          </div>
+
+          <div class="wt-separator"></div>
+
+          <!-- 编辑与听写组 -->
+          <div class="wt-group wt-group-editing">
+            <div class="wt-edit-col">
+              <button class="wt-edit-line" title="查找 (Ctrl+F)"><span class="ei">🔍</span> 查找 ▾</button>
+              <button class="wt-edit-line" title="替换 (Ctrl+H)"><span class="ei">⇄</span> 替换</button>
+              <button class="wt-edit-line" title="选择"><span class="ei">⬚</span> 选择 ▾</button>
+            </div>
+            <div class="wt-dictate-btn" title="语音听写">
+              <span class="mic-icon">🎙️</span>
+              <span>听写</span>
+            </div>
+            <span class="wt-group-label">编辑</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Word 标尺 (Ruler) -->
+      <div class="word-ruler">
+        <div class="ruler-left-margin"></div>
+        <div class="ruler-body">
+          <div class="ruler-indent-left" title="首行缩进与悬挂缩进">
+            <span class="ri-top-triangle"></span>
+            <span class="ri-bottom-triangle"></span>
+            <span class="ri-bottom-box"></span>
+          </div>
+          <div class="ruler-ticks">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+            <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+            <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span>
+            <span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
+            <span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
+            <span>31</span><span>32</span><span>33</span><span>34</span><span>35</span>
+            <span>36</span><span>37</span><span>38</span>
+          </div>
+          <div class="ruler-indent-right" title="右缩进">
+            <span class="ri-right-triangle"></span>
+          </div>
+        </div>
+        <div class="ruler-right-margin"></div>
+      </div>
+
+      <!-- 4. Word 主工作区 (A4 页面与编辑区) -->
+      <div class="word-workspace" id="word-workspace">
+        <div class="word-page-container" id="word-page-container">
+          <!-- 白色真实 A4 页面：第 1 页 -->
+          <article class="word-page" data-page="1">
+            <!-- 页眉 -->
+            <header class="doc-header" contenteditable="false">
+              <span class="dh-tag">集团综合战略发展委员会 · 绝密内部实施细则</span>
+              <span class="dh-page">DOC-2026-HQ-ST94</span>
+            </header>
+
+            <!-- 页面可编辑正文主体 (第 1 页) -->
+            <div class="word-page-body" contenteditable="true" spellcheck="false">
+              <!-- 公文红头/发文字号区域 -->
+              <div class="doc-meta-block" contenteditable="false">
+                <div class="doc-red-head">集团数字化与业务协同推进委员会文件</div>
+                <div class="doc-subhead">集团发〔2026〕38号 · 签发人：董事局主席兼首席执行官</div>
+                <div class="doc-red-line"></div>
+              </div>
+
+              <!-- 主标题 -->
+              <h1 class="doc-main-title">关于深化2026年度业务全链路协同<br>推进数字化升级的总体实施方案与机制细则</h1>
+
+              <!-- 正文起始 -->
+              <div class="doc-lead">
+                为全面贯彻落实集团中长期战略规划部署，加速推动传统业务板块与智能云端算力底座的深度融合，破除跨部门、跨业务线协作壁垒，构建全链路数据驱动与高弹性质效协同网络，特制定本实施方案与落地细则。
+              </div>
+
+              <h2 class="doc-h2">一、 总体指导思想与核心战略目标</h2>
+              <p class="doc-para">
+                坚持以“平台化贯通、智能化提效、穿透式监管、敏捷化闭环”为核心纲领，推动组织架构从传统树状层级向“中台能力池 + 前端敏捷作战单元”矩阵式转型。力争至2026年第四季度末，实现跨部门流程协同周期缩短55%，全链路业务自动化流转率达到92.4%以上，智算中台对各前台业务线的赋能覆盖率实现100%。
+              </p>
+
+              <h2 class="doc-h2">二、 跨部门业务协同网格与权责契约体系</h2>
+              <p class="doc-para">
+                各事业群（BG）须破除各自为政的“烟囱式”系统壁垒，统一接入集团API网关与分布式消息总线。针对跨业务线需求流转，建立严格的服务等级协议（SLA），明确上下游响应时限与交付标准：
+              </p>
+
+              <!-- 逼真的 Word 三线表格 -->
+              <div class="doc-table-wrap" contenteditable="false">
+                <div class="table-caption">表 1-1：2026年度重点数字化协同攻坚专项权责与里程碑交付清单</div>
+                <table class="doc-word-table">
+                  <thead>
+                    <tr>
+                      <th>攻坚专项</th>
+                      <th>牵头协同部门</th>
+                      <th>配合业务单元</th>
+                      <th>核心交付指标与交付标准</th>
+                      <th>里程碑节点</th>
+                      <th>验收考核权数</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>全域统一数据中枢</td>
+                      <td>基础架构与算力平台</td>
+                      <td>各前台事业群业务线</td>
+                      <td>完成7大核心业务库实时CDC同步，延迟&lt;100ms</td>
+                      <td>Q2 阶段末</td>
+                      <td>25% (一票否决)</td>
+                    </tr>
+                    <tr>
+                      <td>智能辅助决策模型库</td>
+                      <td>AI算法与大模型室</td>
+                      <td>量化策略部、风控合规部</td>
+                      <td>上线端到端辅助决策引擎，人效提升40%以上</td>
+                      <td>Q3 攻坚期</td>
+                      <td>20%</td>
+                    </tr>
+                    <tr>
+                      <td>全天候容灾容错架构</td>
+                      <td>云原生与网络安全组</td>
+                      <td>全球运营中心 (NOC)</td>
+                      <td>实现三地五中心双活互备，99.999% SLA可用性</td>
+                      <td>Q3 阶段末</td>
+                      <td>25%</td>
+                    </tr>
+                    <tr>
+                      <td>组织效能穿透式BI</td>
+                      <td>战略运营与财务共享</td>
+                      <td>全集团各级作战单元</td>
+                      <td>经营看板秒级更新，沉淀80+套业务分析模型</td>
+                      <td>Q4 验收期</td>
+                      <td>30%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 页脚 -->
+            <footer class="doc-footer" contenteditable="false">
+              <span class="df-page-number">— 1 —</span>
+            </footer>
+          </article>
+
+          <!-- 白色真实 A4 页面：第 2 页 (当前正在书写页) -->
+          <article class="word-page" data-page="2">
+            <!-- 页眉 -->
+            <header class="doc-header" contenteditable="false">
+              <span class="dh-tag">集团综合战略发展委员会 · 绝密内部实施细则</span>
+              <span class="dh-page">DOC-2026-HQ-ST94</span>
+            </header>
+
+            <!-- 页面可编辑正文主体 (第 2 页) -->
+            <div class="word-page-body" contenteditable="true" spellcheck="false">
+              <h2 class="doc-h2">三、 智能基座赋能与流程价值链再造</h2>
+              <p class="doc-para">
+                各业务条线应深度应用集团全新交付的AI原生开发平台及协同工具链，在客户画像洞察、需求敏捷排期、全链路风险预警等场景推行“人机协同”工作流。由技术委员会牵头组建专项赋能工作组，分批次对各业务骨干实施定向辅导，确保技术红利穿透至终端作业链路。
+              </p>
+
+              <h2 class="doc-h2">四、 实施步骤、保障机制与动态进度追踪</h2>
+              <p class="doc-para">
+                本次全链路数字化升级划分为“顶层方案对齐、核心链路打通、全域业务迁移、效能成果固化”四个梯次阶段，各责任部门须严格落实责任到岗、穿透至人。重点确保以下关键节点执行到位：
+              </p>
+
+              <!-- 动态正在书写的段落容器与打字光标 -->
+              <p id="word-typing-para" class="doc-para typing-active-line">
+                <span id="word-typed-text">五、 关于强化督查考核与容错激励机制的具体举措：首先，建立集团层级每周例行联席会审制度，对重点协同任务实施“红黄蓝”三色动态预警；其次，</span><span id="word-blinking-cursor" class="word-blinking-cursor"></span>
+              </p>
+            </div>
+
+            <!-- 页脚 -->
+            <footer class="doc-footer" contenteditable="false">
+              <span class="df-page-number">— 2 —</span>
+            </footer>
+          </article>
+        </div>
+      </div>
+
+      <!-- 5. Word 底部状态栏 (Status Bar) -->
+      <div class="word-statusbar">
+        <div class="ws-left">
+          <span class="ws-item" id="word-page-count">第 1 页，共 4 页</span>
+          <span class="ws-separator">|</span>
+          <span class="ws-item" id="word-word-count">字数：3,842</span>
+          <span class="ws-separator">|</span>
+          <span class="ws-item" title="校对检查无误">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+              <path d="M14 2H2C1.45 2 1 2.45 1 3v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-2 9l-4 2-4-2V4l4 2 4-2v7z"/>
+            </svg>
+            <span>中文(中国)</span>
+          </span>
+          <span class="ws-separator">|</span>
+          <span class="ws-item" id="word-bottom-save-status">
+            <span class="ws-cloud-icon">☁️</span> 已保存到 OneDrive
+          </span>
+          <span class="ws-separator">|</span>
+          <span class="ws-item ws-pause-status-badge" id="word-typing-state-badge" title="点击切换暂停/继续 (快捷键: X 或 Ctrl+P)">
+            <span class="wt-status-dot"></span>
+            <span id="wt-status-label">打字中 (按 X 暂停)</span>
+          </span>
+        </div>
+
+        <div class="ws-right">
+          <span class="ws-item ws-btn" title="专注模式">专注</span>
+          <div class="ws-views">
+            <span class="ws-view-btn" title="阅读视图">📖</span>
+            <span class="ws-view-btn active" title="页面视图">📄</span>
+            <span class="ws-view-btn" title="Web 视图">🌐</span>
+          </div>
+          <div class="ws-zoom-ctrl">
+            <button class="zoom-btn" title="缩小">-</button>
+            <div class="zoom-slider-track">
+              <div class="zoom-slider-thumb" style="left: 50%;"></div>
+            </div>
+            <button class="zoom-btn" title="放大">+</button>
+            <span class="zoom-pct">100%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- MODE 6: OpenAI o1 深度思考推理大模型 (CHATGPT o1) -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="panel-chatgpt" class="mode-panel chatgpt-panel">
+      <!-- ChatGPT 经典深色左侧边栏 (Sidebar) -->
+      <aside class="chatgpt-sidebar">
+        <!-- 侧边栏顶部快捷操作 -->
+        <div class="csb-header">
+          <button class="csb-new-chat-btn" title="新对话">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-icon">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <span>新对话</span>
+          </button>
+          <button class="csb-icon-btn" title="侧边栏">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 历史会话列表 -->
+        <div class="csb-history-list">
+          <div class="csb-group-label">今天</div>
+          <div class="csb-item active" title="全球分布式强一致性金融撮合引擎架构设计">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="csb-item-title">全球分布式强一致性金融撮合引擎架构设计</span>
+          </div>
+          <div class="csb-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="csb-item-title">跨大洲 Multi-Raft 状态机无锁并发推导</span>
+          </div>
+
+          <div class="csb-group-label">昨天</div>
+          <div class="csb-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="csb-item-title">Q3 智算集群 8 卡 H100 SXM5 NCCL 拓扑调优</span>
+          </div>
+          <div class="csb-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="csb-item-title">金融级 SSI 串行化隔离定理形式化证明</span>
+          </div>
+
+          <div class="csb-group-label">过去 7 天</div>
+          <div class="csb-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="csb-item-title">大模型 FP8 权重剪枝与低秩微调加速指南</span>
+          </div>
+          <div class="csb-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="csb-item-title">自适应混沌容灾与全链路故障演练方案</span>
+          </div>
+          <div class="csb-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="csb-item-title">Kubernetes 微服务高可用多可用区架构</span>
+          </div>
+        </div>
+
+        <!-- 侧边栏底部用户账户卡片 -->
+        <div class="csb-footer">
+          <div class="csb-user-card">
+            <div class="csb-user-avatar">徐</div>
+            <div class="csb-user-info">
+              <div class="csb-user-name">Alex Xu</div>
+              <div class="csb-user-plan">Pro 会员 · o1 深度推理</div>
+            </div>
+            <button class="csb-more-btn">•••</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ChatGPT 主工作聊天区 (Main Chat Area) -->
+      <main class="chatgpt-main">
+        <!-- 顶端模型选择与操作栏 -->
+        <div class="cmain-topbar">
+          <div class="model-badge-btn" title="当前模型：OpenAI o1-preview (思考推理模型)">
+            <span class="model-badge-icon">✨</span>
+            <span class="model-badge-name">o1-preview</span>
+            <span class="model-badge-arrow">▾</span>
+          </div>
+          <div class="cmain-topbar-actions">
+            <button class="cmain-btn" title="分享此对话">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+              <span>共享</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 对话流滚动容器 -->
+        <div class="chatgpt-scroll-container" id="chatgpt-scroll-container">
+          <div class="chatgpt-thread">
+
+            <!-- 用户提问气泡 (User Message) -->
+            <div class="chat-message-row user-row">
+              <div class="message-inner">
+                <div class="msg-bubble user-bubble">
+                  请帮我设计一套具备全球分布式强一致性（Global Distributed Multi-Region Consistency）的金融级撮合与清结算引擎方案。要求在跨大洲 200ms 网络延迟下实现千万级 TPS 并消除脑裂与幽灵事务，附带详尽的 Multi-Raft 变种协议数学证明、内存无锁环形队列拓扑与状态机确定性回滚架构。
+                </div>
+              </div>
+            </div>
+
+            <!-- ChatGPT 深度思考回复 (Assistant Message with o1 Reasoning Box) -->
+            <div class="chat-message-row assistant-row">
+              <div class="message-inner">
+                <!-- 模型头像 -->
+                <div class="model-avatar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/>
+                    <path d="M12 6v6l4 2"/>
+                  </svg>
+                </div>
+
+                <div class="assistant-content-wrap">
+                  <!-- OpenAI o1 经典折叠深度思考卡片 (Thought Box) -->
+                  <div class="thought-box" id="chatgpt-thought-box">
+                    <div class="tb-header" id="chatgpt-thought-toggle" title="点击展开/折叠思维链">
+                      <div class="tb-status-wrap">
+                        <div class="thinking-spinner">
+                          <span class="spinner-ring"></span>
+                          <span class="spinner-pulse"></span>
+                        </div>
+                        <span class="tb-title" id="chatgpt-thinking-timer-text">Thinking for 46 seconds</span>
+                      </div>
+                      <span class="tb-arrow">▾</span>
+                    </div>
+
+                    <!-- 动态实时生长的思维链条 (Chain of Thought - CoT) -->
+                    <div class="tb-cot-container" id="chatgpt-cot-container">
+                      <div class="cot-stream" id="chatgpt-cot-stream">
+                        <!-- 由 JS 实时流式推进思维步骤 -->
+                      </div>
+                      <!-- 思维脉冲动态微标 -->
+                      <div class="cot-live-indicator">
+                        <span class="cot-dot"></span>
+                        <span class="cot-label" id="chatgpt-cot-live-label">Exploring Multi-Raft quorum consensus invariants...</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 正在构思中的占位微光线条 -->
+                  <div class="assistant-draft-stream">
+                    <div class="typing-placeholder-shimmer">
+                      <div class="shimmer-line l1"></div>
+                      <div class="shimmer-line l2"></div>
+                      <div class="shimmer-line l3"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 底部 Prompt 输入框栏 -->
+        <div class="chatgpt-input-area">
+          <div class="chatgpt-input-box">
+            <button class="cib-icon-btn" title="添加附件或代码">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </button>
+            <textarea class="cib-textarea" placeholder="给“ChatGPT”发送消息或追问思考细节..." rows="1" readonly></textarea>
+            <div class="cib-right-tools">
+              <button class="cib-icon-btn" title="网络搜索">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </button>
+              <button class="cib-icon-btn" title="语音输入">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+              </button>
+              <button class="cib-send-btn active" title="发送">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="19" x2="12" y2="5"/>
+                  <polyline points="5 12 12 5 19 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="chatgpt-disclaimer">
+            ChatGPT 可能会犯错。请核对重要信息。· OpenAI o1-preview 正在执行深度逻辑链推导
+          </div>
+        </div>
+      </main>
+    </section>
+
+  </main>
+
+  <!-- ================================================================= -->
+  <!-- 老板键伪装办公界面 (仿企业级 BI / 运营分析报表) -->
+  <!-- ================================================================= -->
+  <div id="boss-container" class="boss-container hidden">
+    <!-- 顶部企业系统导航栏 -->
+    <header class="boss-nav">
+      <div class="boss-nav-left">
+        <div class="boss-logo">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 4h7v7H4V4zm0 9h7v7H4v-7zm9-9h7v7h-7V4zm0 9h7v7h-7v-7z" />
+          </svg>
+          <span>集团综合数字化运营中台 (ERP/BI Suite)</span>
+        </div>
+        <span class="boss-badge">2026 Q3 战略复盘与各事业部执行效能追踪</span>
+      </div>
+      <div class="boss-nav-right">
+        <span class="boss-user">工号: A89420 | 华东大区-数据战略中心</span>
+        <button id="boss-exit-btn" class="boss-switch-back-btn" title="按空格键或点击恢复极客任务">
+          <span>切回系统控制台 (空格)</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 筛选过滤条件栏 -->
+    <div class="boss-filter-bar">
+      <div class="bf-item">
+        <label>统计周期：</label>
+        <select disabled><option selected>2026年第三季度 (Q3 滚动累计)</option></select>
+      </div>
+      <div class="bf-item">
+        <label>业务线：</label>
+        <select disabled><option selected>全集团核心战略事业群 (BG1 - BG6)</option></select>
+      </div>
+      <div class="bf-item">
+        <label>口径标准：</label>
+        <select disabled><option selected>IFRS 国际财务合并口径</option></select>
+      </div>
+      <div class="bf-item-right">
+        <span class="data-refreshed">数据更新于: 刚刚 (自动同步中)</span>
+      </div>
+    </div>
+
+    <!-- 运营分析主内容区 -->
+    <div class="boss-body">
+      <!-- 4 个核心 KPI 卡片 -->
+      <div class="boss-kpi-row">
+        <div class="boss-kpi-card">
+          <div class="bk-title">Q3 季度累计总营收 (GTV)</div>
+          <div class="bk-val">¥ 482,910,400.00</div>
+          <div class="bk-sub green">↑ 同比增长 +18.4% | 预算达成率 104.2%</div>
+        </div>
+        <div class="boss-kpi-card">
+          <div class="bk-title">经调整经营利润率 (Non-GAAP EBIT)</div>
+          <div class="bk-val">24.8%</div>
+          <div class="bk-sub green">↑ 环比优化 +2.1 pct | 毛利控制良好</div>
+        </div>
+        <div class="boss-kpi-card">
+          <div class="bk-title">高价值企业客户续约率 (NDR)</div>
+          <div class="bk-val">118.6%</div>
+          <div class="bk-sub green">↑ 较行业均值高出 14.5%</div>
+        </div>
+        <div class="boss-kpi-card">
+          <div class="bk-title">全域人效与单位算力成本产出比</div>
+          <div class="bk-val">3.82x</div>
+          <div class="bk-sub green">↑ 降本增效指标稳居 A 级第一梯队</div>
+        </div>
+      </div>
+
+      <!-- 图表与待办双列排布 -->
+      <div class="boss-middle-row">
+        <!-- 业务营收趋势图 -->
+        <div class="boss-card boss-chart-box">
+          <div class="bc-head">
+            <span>2026 各月度营收执行对比与下半年预测模型 (百万元)</span>
+            <span class="bc-tag">已通过内审审计</span>
+          </div>
+          <div class="boss-canvas-wrap">
+            <canvas id="boss-chart-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- 本周核心待办工作与管理评审日程 -->
+        <div class="boss-card boss-todo-box">
+          <div class="bc-head">
+            <span>本周重点战略专项待办与审批进度</span>
+            <span class="bc-tag">待处理 (3)</span>
+          </div>
+          <ul class="boss-todo-list">
+            <li class="done">
+              <span class="cb">☑</span>
+              <span class="td-text">[已归档] 提交 Q3 基础设施硬件及智算集群扩容预算复盘报告</span>
+              <span class="td-time">09:30</span>
+            </li>
+            <li class="done">
+              <span class="cb">☑</span>
+              <span class="td-text">[已完成] 华东与华南跨区域多可用区灾备演练方案最终评审</span>
+              <span class="td-time">11:15</span>
+            </li>
+            <li>
+              <span class="cb">☐</span>
+              <span class="td-text">[处理中] 审核海外新架构数据合规安全与 SLA 保障承诺书</span>
+              <span class="td-time orange">进行中</span>
+            </li>
+            <li>
+              <span class="cb">☐</span>
+              <span class="td-text">[待推进] 组织召开 2026 年度技术委员会核心算法研发路线推演</span>
+              <span class="td-time">16:30</span>
+            </li>
+            <li>
+              <span class="cb">☐</span>
+              <span class="td-text">[待审批] 核心骨干工程师专项期权绩效激励池二次分配方案</span>
+              <span class="td-time">18:00</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 底部各业务单元详细数据表格 -->
+      <div class="boss-card boss-table-box">
+        <div class="bc-head">
+          <span>重点业务单元 (BU) 综合效能与预算执行明细追踪表</span>
+          <span class="bc-tag">内部绝密 · 严禁外传</span>
+        </div>
+        <table class="boss-table">
+          <thead>
+            <tr>
+              <th>事业部单元</th>
+              <th>负责人</th>
+              <th>Q3 目标 (万元)</th>
+              <th>当前完成 (万元)</th>
+              <th>目标达成率</th>
+              <th>预算消耗</th>
+              <th>合规评级</th>
+              <th>当前状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>基础模型与算力平台中心</td>
+              <td>张总工</td>
+              <td>160,000</td>
+              <td>168,400</td>
+              <td><span class="rate-bar-wrap"><span class="rate-bar" style="width: 100%;"></span> 105.2%</span></td>
+              <td>92.4%</td>
+              <td><span class="tag green">S-CLASS</span></td>
+              <td><span class="status-pill green">超额进行</span></td>
+            </tr>
+            <tr>
+              <td>企业云原生微服务架构部</td>
+              <td>李副总</td>
+              <td>110,000</td>
+              <td>114,200</td>
+              <td><span class="rate-bar-wrap"><span class="rate-bar" style="width: 98%;"></span> 103.8%</span></td>
+              <td>88.1%</td>
+              <td><span class="tag green">A+</span></td>
+              <td><span class="status-pill green">交付达标</span></td>
+            </tr>
+            <tr>
+              <td>全域安全态势感知与防守组</td>
+              <td>赵总监</td>
+              <td>75,000</td>
+              <td>74,800</td>
+              <td><span class="rate-bar-wrap"><span class="rate-bar" style="width: 99%;"></span> 99.7%</span></td>
+              <td>94.6%</td>
+              <td><span class="tag green">A</span></td>
+              <td><span class="status-pill blue">按期收尾</span></td>
+            </tr>
+            <tr>
+              <td>量化算法策略与高频撮合室</td>
+              <td>陈首席</td>
+              <td>90,000</td>
+              <td>98,500</td>
+              <td><span class="rate-bar-wrap"><span class="rate-bar" style="width: 100%;"></span> 109.4%</span></td>
+              <td>81.2%</td>
+              <td><span class="tag green">S</span></td>
+              <td><span class="status-pill green">显著超额</span></td>
+            </tr>
+            <tr>
+              <td>海外多区域节点基础设施部</td>
+              <td>孙总监</td>
+              <td>48,000</td>
+              <td>47,010</td>
+              <td><span class="rate-bar-wrap"><span class="rate-bar" style="width: 97%;"></span> 97.9%</span></td>
+              <td>95.0%</td>
+              <td><span class="tag green">A-</span></td>
+              <td><span class="status-pill blue">正常推进</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 轻量悬浮通知 Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- 引入核心逻辑模块 -->
+  <script src="app.js"></script>
+</body>
+</html>
