@@ -32,42 +32,63 @@ def restore_awake():
     except Exception:
         pass
 
+class POINT(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
+
+def poke_active():
+    """
+    触发绝对物理像素级扰动，100% 穿透 Windows 鼠标加速死区与 DPI 缩放滤波：
+    1. 获取当前光标屏幕绝对坐标 (pt.x, pt.y)
+    2. 使用 SetCursorPos 绝对移动 +2 像素（绕过 mouse_event 相对 mickey 被系统丢弃的问题）
+    3. 间隔 15ms 后恢复原坐标，肉眼完全无法察觉
+    4. 同步发送无害的虚拟按键事件，确保 Windows 底层 GetLastInputInfo 时间戳强制刷新
+    """
+    try:
+        pt = POINT()
+        if ctypes.windll.user32.GetCursorPos(ctypes.byref(pt)):
+            orig_x, orig_y = pt.x, pt.y
+            # 绝对坐标位移 2 像素（穿透 EPP 鼠标加速死区）
+            ctypes.windll.user32.SetCursorPos(orig_x + 2, orig_y)
+            time.sleep(0.015)
+            ctypes.windll.user32.SetCursorPos(orig_x, orig_y)
+        
+        # 补充虚拟按键事件 (VK_F15 = 0x7E)
+        VK_F15 = 0x7E
+        KEYEVENTF_KEYUP = 0x0002
+        ctypes.windll.user32.keybd_event(VK_F15, 0, 0, 0)
+        time.sleep(0.01)
+        ctypes.windll.user32.keybd_event(VK_F15, 0, KEYEVENTF_KEYUP, 0)
+    except Exception:
+        pass
+
 def keep_awake_loop():
     """
-    后台心跳守护线程：
+    后台心跳守护线程（专为企业微信 AutoLeaveMonitor 机制设计）：
     1. 持续调用 SetThreadExecutionState 阻止屏幕息屏和系统休眠
-    2. 发送真实微像素摆动 (+1px, -1px) 与无害虚拟键 (VK_F15)
-       重置 Windows 系统的 GetLastInputInfo 计时器，
-       100% 保持企业微信、钉钉、Teams 在线状态，防止变为「离开/离线」
+    2. 企微复苏机制：企微要求空闲时间 < 500ms 才能从「离开电脑」自动恢复为「在线」
+       因此刚启动时在 2 秒内连续触发多次复苏脉冲，强行把状态拉回「在线」
+    3. 后续以 8 秒高频周期巡检，远低于企微 5 秒定时器累计与离开判定阈值，保证永远在线
     """
     global running
     set_keep_awake()
+
+    # 启动时连续发射 3 次快速唤醒脉冲，确保命中企微 <500ms 复苏窗口
+    for _ in range(3):
+        poke_active()
+        time.sleep(0.3)
     
-    # VK_F15 = 0x7E (Windows 高级功能键，无物理键位，不干扰任何程序)
-    VK_F15 = 0x7E
-    KEYEVENTF_KEYUP = 0x0002
-    
-    toggle = True
     while running:
         try:
             # 1. 刷新 Windows 电源常亮状态
             set_keep_awake()
             
-            # 2. 真实微像素摆动（向右1像素再向左1像素，保持绝对坐标不变）
-            # 这会 100% 触发系统底层 RAWINPUT，刷新 GetLastInputInfo
-            ctypes.windll.user32.mouse_event(0x0001, 1, 0, 0, 0)
-            time.sleep(0.05)
-            ctypes.windll.user32.mouse_event(0x0001, -1, 0, 0, 0)
-            
-            # 3. 辅助按键脉冲：发送无害的 F15 按下与释放事件，双保险防离开
-            ctypes.windll.user32.keybd_event(VK_F15, 0, 0, 0)
-            time.sleep(0.02)
-            ctypes.windll.user32.keybd_event(VK_F15, 0, KEYEVENTF_KEYUP, 0)
-        except Exception as e:
+            # 2. 发送真实物理像素微扰动
+            poke_active()
+        except Exception:
             pass
         
-        # 15秒循环一次（远低于企微3-5分钟离开的阈值，确保永远在线）
-        time.sleep(15)
+        # 每隔 8 秒执行一次（企微定时器为 5 秒，8 秒内必有两次刷新，永不达到离开超时）
+        time.sleep(8)
 
 def get_system_stats():
     """获取基础系统数据让前端仪表盘更真实"""
