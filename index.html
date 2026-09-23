@@ -933,172 +933,381 @@
     </section>
 
     <!-- ------------------------------------------------------------- -->
-    <!-- MODE 6: OpenAI o1 深度思考推理大模型 (CHATGPT o1) -->
+    <!-- MODE 6: OpenAI o1 深度思考推理大模型 (CHATGPT 真实浅色界面) -->
     <!-- ------------------------------------------------------------- -->
     <section id="panel-chatgpt" class="mode-panel chatgpt-panel">
-      <!-- ChatGPT 经典深色左侧边栏 (Sidebar) -->
+      <!-- ChatGPT 经典浅色左侧边栏 (Sidebar: #f9f9f9) -->
       <aside class="chatgpt-sidebar">
-        <!-- 侧边栏顶部快捷操作 -->
-        <div class="csb-header">
-          <button class="csb-new-chat-btn" title="新对话">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-icon">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            <span>新对话</span>
-          </button>
-          <button class="csb-icon-btn" title="侧边栏">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <!-- 侧边栏顶部工具栏 -->
+        <div class="csb-top-row">
+          <button class="csb-icon-btn" title="关闭边栏">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-svg">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
               <line x1="9" y1="3" x2="9" y2="21"/>
             </svg>
           </button>
-        </div>
-
-        <!-- 历史会话列表 -->
-        <div class="csb-history-list">
-          <div class="csb-group-label">今天</div>
-          <div class="csb-item active" title="全球分布式强一致性金融撮合引擎架构设计">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="csb-item-title">全球分布式强一致性金融撮合引擎架构设计</span>
-          </div>
-          <div class="csb-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="csb-item-title">跨大洲 Multi-Raft 状态机无锁并发推导</span>
-          </div>
-
-          <div class="csb-group-label">昨天</div>
-          <div class="csb-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="csb-item-title">Q3 智算集群 8 卡 H100 SXM5 NCCL 拓扑调优</span>
-          </div>
-          <div class="csb-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="csb-item-title">金融级 SSI 串行化隔离定理形式化证明</span>
-          </div>
-
-          <div class="csb-group-label">过去 7 天</div>
-          <div class="csb-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="csb-item-title">大模型 FP8 权重剪枝与低秩微调加速指南</span>
-          </div>
-          <div class="csb-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="csb-item-title">自适应混沌容灾与全链路故障演练方案</span>
-          </div>
-          <div class="csb-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-chat-icon">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="csb-item-title">Kubernetes 微服务高可用多可用区架构</span>
-          </div>
-        </div>
-
-        <!-- 侧边栏底部用户账户卡片 -->
-        <div class="csb-footer">
-          <div class="csb-user-card">
-            <div class="csb-user-avatar">徐</div>
-            <div class="csb-user-info">
-              <div class="csb-user-name">Alex Xu</div>
-              <div class="csb-user-plan">Pro 会员 · o1 深度推理</div>
-            </div>
-            <button class="csb-more-btn">•••</button>
-          </div>
-        </div>
-      </aside>
-
-      <!-- ChatGPT 主工作聊天区 (Main Chat Area) -->
-      <main class="chatgpt-main">
-        <!-- 顶端模型选择与操作栏 -->
-        <div class="cmain-topbar">
-          <div class="model-badge-btn" title="当前模型：OpenAI o1-preview (思考推理模型)">
-            <span class="model-badge-icon">✨</span>
-            <span class="model-badge-name">o1-preview</span>
-            <span class="model-badge-arrow">▾</span>
-          </div>
-          <div class="cmain-topbar-actions">
-            <button class="cmain-btn" title="分享此对话">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                <polyline points="16 6 12 2 8 6"/>
-                <line x1="12" y1="2" x2="12" y2="15"/>
+          <div class="csb-top-right">
+            <button class="csb-icon-btn" title="搜索聊天">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="csb-svg">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="21" y1="21" x2="16.5" y2="16.5"/>
               </svg>
-              <span>共享</span>
+            </button>
+            <button class="csb-icon-btn" title="新聊天">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-svg">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
             </button>
           </div>
         </div>
 
-        <!-- 对话流滚动容器 -->
+        <!-- 侧边栏主体可滚动内容区 -->
+        <div class="csb-scroll-area">
+          <!-- 快捷操作入口 -->
+          <div class="csb-nav-list">
+            <div class="csb-nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-nav-icon">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+              <span>新聊天</span>
+            </div>
+            <div class="csb-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-nav-icon">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              </svg>
+              <span>资料库</span>
+            </div>
+            <div class="csb-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-nav-icon">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>定时任务</span>
+            </div>
+            <div class="csb-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-nav-icon">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>插件</span>
+            </div>
+            <div class="csb-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-nav-icon">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>站点</span>
+              <span class="csb-new-badge">新</span>
+            </div>
+            <div class="csb-nav-item csb-more-item">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="csb-nav-icon dots">
+                <circle cx="5" cy="12" r="1.8"/>
+                <circle cx="12" cy="12" r="1.8"/>
+                <circle cx="19" cy="12" r="1.8"/>
+              </svg>
+              <span>更多</span>
+            </div>
+          </div>
+
+          <!-- “置顶”分类 -->
+          <div class="csb-section-header">置顶</div>
+          <div class="csb-chat-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="csb-item-text" title="产品管理部周报总结">产品管理部周报总结</span>
+          </div>
+
+          <!-- “项目”分类（精美文件夹列表） -->
+          <div class="csb-section-header">项目</div>
+          <div class="csb-folder-list">
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="单点自锁方案">单点自锁方案</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="Financial Management">Financial Management</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="线束管理方案">线束管理方案</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="D2P120产品ADCP汇报">D2P120产品ADCP汇报</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="官方网页">官方网页</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="农光专题">农光专题</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="机械联动立项报告">机械联动立项报告</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="网课">网课</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="一体式抱箍竞对调研">一体式抱箍竞对调研</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="质保文件">质保文件</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="产品定义资料包">产品定义资料包</span>
+            </div>
+            <div class="csb-chat-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="csb-item-icon folder">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="csb-item-text" title="竞对动态">竞对动态</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 侧边栏底部用户个人信息卡片 (Yuhuan Zhou / Plus) -->
+        <div class="csb-user-profile">
+          <div class="csb-avatar-circle">YZ</div>
+          <div class="csb-user-meta">
+            <div class="csb-user-fullname">Yuhuan Zhou</div>
+            <div class="csb-user-tier">Plus</div>
+          </div>
+          <div class="csb-user-tail">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="csb-dots-svg">
+              <circle cx="12" cy="5" r="1.6"/>
+              <circle cx="12" cy="12" r="1.6"/>
+              <circle cx="12" cy="19" r="1.6"/>
+            </svg>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ChatGPT 主工作聊天区 (纯白现代视口: #ffffff) -->
+      <main class="chatgpt-main">
+        <!-- 顶端轻量操作条 -->
+        <div class="cmain-header-row">
+          <div class="cmain-header-left">
+            <button class="cmain-title-btn">
+              <span class="cmain-model-text">ChatGPT</span>
+              <span class="cmain-chevron">⌵</span>
+            </button>
+          </div>
+          <div class="cmain-header-right">
+            <button class="cmain-pill-btn" title="分享">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="share-icon">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              <span>分享</span>
+            </button>
+            <button class="cmain-circle-icon-btn" title="更多">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="dots-svg">
+                <circle cx="5" cy="12" r="1.8"/>
+                <circle cx="12" cy="12" r="1.8"/>
+                <circle cx="19" cy="12" r="1.8"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 对话流滚动主容器 -->
         <div class="chatgpt-scroll-container" id="chatgpt-scroll-container">
           <div class="chatgpt-thread">
 
             <!-- 用户提问气泡 (User Message) -->
             <div class="chat-message-row user-row">
-              <div class="message-inner">
-                <div class="msg-bubble user-bubble">
-                  请帮我设计一套具备全球分布式强一致性（Global Distributed Multi-Region Consistency）的金融级撮合与清结算引擎方案。要求在跨大洲 200ms 网络延迟下实现千万级 TPS 并消除脑裂与幽灵事务，附带详尽的 Multi-Raft 变种协议数学证明、内存无锁环形队列拓扑与状态机确定性回滚架构。
-                </div>
+              <div class="msg-bubble user-bubble">
+                请分析支架系统工程供应商文件（Engineering Vendor Document for Mounting System）中以下几个 Annex 附件的合理归档分类：<br>
+                Annex 1 - Design code<br>
+                Annex 3 - Technical documents from the owner<br>
+                Annex 4 - Wind Tunnel Testing reports from CPP<br>
+                当前工程库有 22 类预设目录，请评估应归入哪一类，还是建议单独新建子文件夹或扩展第 23 类？
               </div>
             </div>
 
-            <!-- ChatGPT 深度思考回复 (Assistant Message with o1 Reasoning Box) -->
+            <!-- ChatGPT 真实回答 (Assistant Message) -->
             <div class="chat-message-row assistant-row">
-              <div class="message-inner">
-                <!-- 模型头像 -->
-                <div class="model-avatar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/>
-                    <path d="M12 6v6l4 2"/>
-                  </svg>
+              <div class="assistant-content-wrap">
+                <!-- 逼真的 OpenAI o1 深度思考折叠条 (Reasoning Box) -->
+                <div class="thought-box" id="chatgpt-thought-box">
+                  <div class="tb-header" id="chatgpt-thought-toggle" title="点击展开/折叠思考过程">
+                    <div class="tb-left">
+                      <div class="thinking-spinner">
+                        <span class="spinner-ring"></span>
+                        <span class="spinner-pulse"></span>
+                      </div>
+                      <span class="tb-title" id="chatgpt-thinking-timer-text">已思考 17 秒</span>
+                    </div>
+                    <span class="tb-arrow">⌵</span>
+                  </div>
+
+                  <!-- 展开后的工程架构思维链条 (Chain of Thought) -->
+                  <div class="tb-cot-container" id="chatgpt-cot-container">
+                    <div class="cot-stream" id="chatgpt-cot-stream">
+                      <!-- 动态填充真实工程推导步骤 -->
+                    </div>
+                    <div class="cot-live-indicator">
+                      <span class="cot-dot"></span>
+                      <span class="cot-label" id="chatgpt-cot-live-label">正在校验 Annex 4 CPP 风洞报告边界荷载与子目录层级契约...</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div class="assistant-content-wrap">
-                  <!-- OpenAI o1 经典折叠深度思考卡片 (Thought Box) -->
-                  <div class="thought-box" id="chatgpt-thought-box">
-                    <div class="tb-header" id="chatgpt-thought-toggle" title="点击展开/折叠思维链">
-                      <div class="tb-status-wrap">
-                        <div class="thinking-spinner">
-                          <span class="spinner-ring"></span>
-                          <span class="spinner-pulse"></span>
-                        </div>
-                        <span class="tb-title" id="chatgpt-thinking-timer-text">Thinking for 46 seconds</span>
-                      </div>
-                      <span class="tb-arrow">▾</span>
-                    </div>
+                <!-- 回答正文 1：三列规范对照表格 -->
+                <div class="cg-table-wrapper">
+                  <table class="cg-markdown-table">
+                    <thead>
+                      <tr>
+                        <th>附件文件名称</th>
+                        <th>建议归属类别</th>
+                        <th>分类依据与技术说明</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="td-filename">Annex 1 - Design code</td>
+                        <td class="td-category">16 Technical Specification</td>
+                        <td class="td-desc">Design Code 属于支架设计采用的规范、标准和设计准则，和 Technical Specification 最接近</td>
+                      </tr>
+                      <tr>
+                        <td class="td-filename">Annex 3 - Technical documents from the owner</td>
+                        <td class="td-category">16 Technical Specification</td>
+                        <td class="td-desc">业主提供的技术要求/设计输入，本质也是项目技术规范及设计依据</td>
+                      </tr>
+                      <tr>
+                        <td class="td-filename">Annex 4 - Wind Tunnel Testing reports from CPP</td>
+                        <td class="td-category">2 General Technical Description 下，最好单独建一个子文件夹 Wind Tunnel Test Report</td>
+                        <td class="td-desc">风洞报告是结构设计的重要技术依据，但你现在的 22 类里没有专门的 Wind Tunnel 分类；不要放 8 Pluck testing，那个明显是桩基 Pull-out Test，不是一类东西</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
-                    <!-- 动态实时生长的思维链条 (Chain of Thought - CoT) -->
-                    <div class="tb-cot-container" id="chatgpt-cot-container">
-                      <div class="cot-stream" id="chatgpt-cot-stream">
-                        <!-- 由 JS 实时流式推进思维步骤 -->
-                      </div>
-                      <!-- 思维脉冲动态微标 -->
-                      <div class="cot-live-indicator">
-                        <span class="cot-dot"></span>
-                        <span class="cot-label" id="chatgpt-cot-live-label">Exploring Multi-Raft quorum consensus invariants...</span>
-                      </div>
-                    </div>
+                <!-- 回答正文 2：代码树状结构块 -->
+                <div class="cg-code-block">
+                  <div class="cg-code-header">
+                    <span class="cg-code-lang">text</span>
+                    <button class="cg-copy-code-btn" title="复制代码">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-svg">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                      </svg>
+                      <span>复制代码</span>
+                    </button>
                   </div>
+                  <pre class="cg-code-pre"><code>6 Engineering Vendor Document for Mounting System
 
-                  <!-- 正在构思中的占位微光线条 -->
-                  <div class="assistant-draft-stream">
-                    <div class="typing-placeholder-shimmer">
-                      <div class="shimmer-line l1"></div>
-                      <div class="shimmer-line l2"></div>
-                      <div class="shimmer-line l3"></div>
-                    </div>
+├── 2 General Technical Description
+│    └── Wind Tunnel Test Report
+│         └── Annex 4 - Wind Tunnel Testing reports from CPP
+│
+└── 16 Technical Specification
+     ├── Annex 1 - Design code
+     └── Annex 3 - Technical documents from the owner</code></pre>
+                </div>
+
+                <!-- 回答正文 3：总结建议段落 -->
+                <div class="cg-prose-para">
+                  其中 Annex 4 我不建议硬塞进现有某个不匹配的分类。如果这个文件夹结构允许新增第 23 类，甚至更推荐直接新增：
+                </div>
+                <div class="cg-prose-highlight">
+                  <strong>23 Wind Tunnel Test Report</strong>
+                </div>
+                <div class="cg-prose-para">
+                  这样以后审核人员找风洞报告会非常直观。
+                </div>
+
+                <!-- 动态假装还在持续深化思考的微流 (Streaming Insight) -->
+                <div class="cg-ongoing-thought-stream" id="cg-ongoing-stream-box">
+                  <div class="cg-ongoing-header">
+                    <span class="cg-ongoing-pulse-dot"></span>
+                    <span class="cg-ongoing-title">正在继续推导光伏支架工程文件流水号编码规则与防冲突校验规范：</span>
                   </div>
+                  <p class="cg-ongoing-text" id="cg-ongoing-text"></p><span class="cg-ongoing-cursor"></span>
+                </div>
+
+                <!-- 回答底部交互工具栏 (复制、赞、踩、分享、刷新、更多) -->
+                <div class="cg-msg-actions">
+                  <button class="cg-action-icon" title="复制回答">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                  </button>
+                  <button class="cg-action-icon" title="好评">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                    </svg>
+                  </button>
+                  <button class="cg-action-icon" title="差评">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/>
+                    </svg>
+                  </button>
+                  <button class="cg-action-icon" title="分享">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="18" cy="5" r="3"/>
+                      <circle cx="6" cy="12" r="3"/>
+                      <circle cx="18" cy="19" r="3"/>
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                  </button>
+                  <button class="cg-action-icon" title="重新生成">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <polyline points="1 20 1 14 7 14"/>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                  </button>
+                  <button class="cg-action-icon" title="更多">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="5" cy="12" r="1.8"/>
+                      <circle cx="12" cy="12" r="1.8"/>
+                      <circle cx="19" cy="12" r="1.8"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1106,24 +1315,32 @@
           </div>
         </div>
 
-        <!-- 底部 Prompt 输入框栏 -->
+        <!-- 底部输入框区域 (严格按截图浅色圆角胶囊与语音声浪按钮) -->
         <div class="chatgpt-input-area">
+          <div class="chatgpt-disclaimer-top">ChatGPT 也可能会犯错。请核查重要信息。</div>
           <div class="chatgpt-input-box">
-            <button class="cib-icon-btn" title="添加附件或代码">
+            <!-- 左侧圆圈加号按钮 -->
+            <button class="cib-plus-btn" title="添加附件或内容">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                <circle cx="12" cy="12" r="9"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
               </svg>
             </button>
-            <textarea class="cib-textarea" placeholder="给“ChatGPT”发送消息或追问思考细节..." rows="1" readonly></textarea>
+
+            <!-- 问问 ChatGPT 输入区域 -->
+            <input type="text" class="cib-text-input" placeholder="问问 ChatGPT" readonly />
+
+            <!-- 右侧操作项 -->
             <div class="cib-right-tools">
-              <button class="cib-icon-btn" title="网络搜索">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </svg>
-              </button>
-              <button class="cib-icon-btn" title="语音输入">
+              <!-- 推理强度胶囊标签 -->
+              <div class="cib-pill-reasoning" title="推理模型强度">
+                <span>高</span>
+                <span class="cib-chevron">⌵</span>
+              </div>
+
+              <!-- 麦克风图标 -->
+              <button class="cib-tool-btn" title="语音输入">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                   <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -1131,16 +1348,17 @@
                   <line x1="8" y1="23" x2="16" y2="23"/>
                 </svg>
               </button>
-              <button class="cib-send-btn active" title="发送">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <line x1="12" y1="19" x2="12" y2="5"/>
-                  <polyline points="5 12 12 5 19 12"/>
+
+              <!-- 蓝色实心圆形高级语音声浪按钮 -->
+              <button class="cib-voice-bubble-btn" title="开启语音对话">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="waveform-svg">
+                  <rect x="4" y="9" width="2.5" height="6" rx="1.2"/>
+                  <rect x="8.5" y="6" width="2.5" height="12" rx="1.2"/>
+                  <rect x="13" y="4" width="2.5" height="16" rx="1.2"/>
+                  <rect x="17.5" y="8" width="2.5" height="8" rx="1.2"/>
                 </svg>
               </button>
             </div>
-          </div>
-          <div class="chatgpt-disclaimer">
-            ChatGPT 可能会犯错。请核对重要信息。· OpenAI o1-preview 正在执行深度逻辑链推导
           </div>
         </div>
       </main>

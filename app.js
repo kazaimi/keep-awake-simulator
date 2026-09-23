@@ -71,9 +71,11 @@
 
     // 模式 6: OpenAI o1-preview 深度思考模型
     chatgpt: {
-      thinkingSeconds: 46,
+      thinkingSeconds: 17,
       stepIndex: 0,
       charIndex: 0,
+      ongoingTextIndex: 0,
+      ongoingCharIndex: 0,
       isCollapsed: false,
       cotItems: []
     }
@@ -135,6 +137,7 @@
     chatgptCotStream: document.getElementById('chatgpt-cot-stream'),
     chatgptCotLiveLabel: document.getElementById('chatgpt-cot-live-label'),
     chatgptScrollContainer: document.getElementById('chatgpt-scroll-container'),
+    cgOngoingText: document.getElementById('cg-ongoing-text'),
 
     // LLM 组件
     gpuGrid: document.getElementById('gpu-grid'),
@@ -1953,42 +1956,43 @@
   }
 
   // --------------------------------------------------------------------------
-  // 11. OpenAI o1-preview 深度思考大模型 (CHATGPT 拟真思考界面)
+  // 11. OpenAI o1-preview 深度思考大模型 (CHATGPT 真实浅色界面引擎)
   // --------------------------------------------------------------------------
   const CHATGPT_COT_STEPS = [
-    "Analyzing global latency topology: High round-trip time (RTT ~180-210ms) between transatlantic datacenters precludes single-leader synchronous consensus.",
-    "Formulating Multi-Raft partitioning: Assigning separate consensus groups per financial asset class to eliminate global locking contention.",
-    "Evaluating Hybrid Logical Clocks (HLC) vs Spanner TrueTime: HLC bounds causality without requiring GPS hardware synchronization.",
-    "Deriving zero-split-brain quorum theorem: Proving 3-region quorum (2/3 majority) guarantees linearizability under arbitrary split-brain partitions.",
-    "Designing bounded asynchronous replication: In-flight transactions pipelined through deterministic pre-sequencing queues.",
-    "Optimizing in-memory cache locality: Ring buffers aligned to 64-byte CPU cache lines with false sharing mitigation.",
-    "Evaluating concurrency control: Benchmarking Serializable Snapshot Isolation (SSI) vs Calvin deterministic scheduling for 10M TPS.",
-    "Formalizing state machine safety invariant: Transitions across all read-replicas satisfy strictly deterministic replay guarantees.",
-    "Constructing lock-free order-book arena allocator: Eliminating runtime garbage collection pauses and page faults via mlock().",
-    "Verifying transient WAN jitter tolerance: Adjusting Raft election timeouts with exponential randomized backoff parameters.",
-    "Ensuring zero phantom transactions: Proving Write-Ahead Log (WAL) fsync batching preserves ACID recovery idempotency.",
-    "Synthesizing decoupling architecture: In-memory core matching decoupled from asynchronous multi-datacenter ledger settlement.",
-    "Validating disaster recovery bounds: Verifying RPO = 0 and RTO < 500ms across asymmetric network cuts.",
-    "Structuring comprehensive response: Synthesizing executive architectural diagram, state machine proofs, and high-concurrency benchmarks."
+    "分析 Mounting System 22类标准化技术文件体系架构与工程供应商交付契约...",
+    "比对 Design Code 与 Technical Specification 的标准约束等级，验证设计准则与计算依据的归属性...",
+    "评估业主技术输入（Technical documents from the owner）在合同工程范围内的设计边界权重...",
+    "详查 CPP 实验室风洞报告（Wind Tunnel Testing Reports）的气动弹性模型试验数据特征与荷载规范接口...",
+    "排查分类歧义：核实 8 Pluck testing 实际为桩基抗拔测试（Pull-out Test），与结构空气动力学风洞报告存在本质差异...",
+    "拟定子目录继承方案：推荐在 2 General Technical Description 下设立独立子集 Wind Tunnel Test Report...",
+    "评估扩展目录树可行性：推导新增 23 Wind Tunnel Test Report 对于全生命周期审核溯源的直观性增益...",
+    "构建清晰对比矩阵：格式化输出规范化三列归档对照表与清晰的 ASC-II 树状工程文件层级拓扑。"
   ];
 
   const CHATGPT_LIVE_LABELS = [
-    "Exploring Multi-Raft quorum consensus invariants...",
-    "Proving safety bounds under 200ms transatlantic RTT jitter...",
-    "Deriving zero-allocation matching queue memory layouts...",
-    "Synthesizing linearizability proofs for snapshot isolation...",
-    "Simulating network split-brain partition recovery...",
-    "Validating RocksDB WAL write batch throughput limits...",
-    "Formulating cross-region ACID settlement matrix..."
+    "正在校验 Annex 4 CPP 风洞报告边界荷载与子目录层级契约...",
+    "正在比对 22 预设目录与 ISO/IEC 支架工程技术归档标准...",
+    "正在推导风洞报告空气动力学参数在结构计算中的独立权重...",
+    "正在推演第 23 类独立归档对于工程终审验收的检索优化度...",
+    "正在校验工程图纸流水号与附录文件命名规范一致性..."
+  ];
+
+  // 动态流式打字：推导后续细则规范
+  const CHATGPT_ONGOING_TEXTS = [
+    "此外，建议对供应商随附的计算书（Structural Calculation Sheet）与三维模型文件制定统一版本校验码，确保 CPP 风洞报告中的风载体型系数与基础力学仿真输入精确闭环对齐。",
+    "针对后续阶段的疲劳荷载评估与气动失稳检验，若有补充气弹模型风洞报告（Aeroelastic Test），建议统一编制编号为 23-WT-CPP-REV01 并加盖技术负责人印鉴。",
+    "建议在总承包方工程协同管理平台中设置自动校验触发器：当上传带有“Wind Tunnel”特征的文件时，系统自动预分配至第 23 类并向结构工程师派发审核任务工单。"
   ];
 
   let chatgptCotTimer = null;
   let chatgptSecondInterval = null;
+  let chatgptStreamTimer = null;
 
   function initChatgptModule() {
     setupChatgptInteractions();
     preloadInitialCot();
     startChatgptThinkingDaemon();
+    startOngoingInsightTyping();
   }
 
   function setupChatgptInteractions() {
@@ -2000,15 +2004,32 @@
         playTickSound('click');
       });
     }
+
+    // 复制代码按钮绑定反馈
+    const copyBtns = document.querySelectorAll('.cg-copy-code-btn');
+    copyBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        playTickSound('click');
+        showToast('已复制工程目录树到剪贴板');
+      });
+    });
+
+    // 消息底部小图标交互
+    const actionIcons = document.querySelectorAll('.cg-action-icon');
+    actionIcons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        playTickSound('click');
+      });
+    });
   }
 
   function formatThinkingTime(totalSecs) {
     if (totalSecs < 60) {
-      return `Thinking for ${totalSecs} seconds`;
+      return `已思考 ${totalSecs} 秒`;
     }
     const mins = Math.floor(totalSecs / 60);
     const secs = totalSecs % 60;
-    return `Thinking for ${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+    return `已思考 ${mins} 分 ${secs} 秒`;
   }
 
   function preloadInitialCot() {
@@ -2032,14 +2053,6 @@
     item.className = `cot-step-item ${isLatest ? 'latest' : ''}`;
     item.textContent = text;
     DOM.chatgptCotStream.appendChild(item);
-
-    // 平滑滚动到底部
-    if (DOM.chatgptScrollContainer && state.currentMode === 'chatgpt') {
-      DOM.chatgptScrollContainer.scrollTo({
-        top: DOM.chatgptScrollContainer.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
   }
 
   function startChatgptThinkingDaemon() {
@@ -2053,13 +2066,13 @@
     }, 1000);
 
     // 2. 调度下一条深度思考推导步骤
-    scheduleNextCotStep(2600);
+    scheduleNextCotStep(3200);
   }
 
   function scheduleNextCotStep(delay) {
     if (chatgptCotTimer) clearTimeout(chatgptCotTimer);
     const speedMultiplier = state.speed || 1;
-    const actualDelay = Math.max(450, Math.floor(delay / speedMultiplier));
+    const actualDelay = Math.max(500, Math.floor(delay / speedMultiplier));
     chatgptCotTimer = setTimeout(triggerNextCotStep, actualDelay);
   }
 
@@ -2079,12 +2092,53 @@
       DOM.chatgptCotLiveLabel.textContent = randomLabel;
     }
 
-    // 下一条思考步骤间隔在 2.5s ~ 4.8s 之间
-    scheduleNextCotStep(2500 + Math.random() * 2300);
+    scheduleNextCotStep(3400 + Math.random() * 2600);
+  }
+
+  // 动态打字机：流式输出后续深入思考推导建议
+  function startOngoingInsightTyping() {
+    scheduleNextOngoingChar(150);
+  }
+
+  function scheduleNextOngoingChar(delay) {
+    if (chatgptStreamTimer) clearTimeout(chatgptStreamTimer);
+    const speedMultiplier = state.speed || 1;
+    const actualDelay = Math.max(20, Math.floor(delay / speedMultiplier));
+    chatgptStreamTimer = setTimeout(typeOngoingStep, actualDelay);
+  }
+
+  function typeOngoingStep() {
+    const currentParagraph = CHATGPT_ONGOING_TEXTS[state.chatgpt.ongoingTextIndex % CHATGPT_ONGOING_TEXTS.length];
+    if (state.chatgpt.ongoingCharIndex >= currentParagraph.length) {
+      // 当前推导段落打完，微歇 4 秒后切入下一条建议
+      state.chatgpt.ongoingTextIndex++;
+      state.chatgpt.ongoingCharIndex = 0;
+      setTimeout(() => {
+        if (DOM.cgOngoingText) DOM.cgOngoingText.textContent = '';
+        scheduleNextOngoingChar(200);
+      }, 3800);
+      return;
+    }
+
+    const char = currentParagraph[state.chatgpt.ongoingCharIndex];
+    state.chatgpt.ongoingCharIndex++;
+    if (DOM.cgOngoingText) {
+      DOM.cgOngoingText.textContent += char;
+    }
+
+    if (state.currentMode === 'chatgpt') {
+      playTickSound('wordKey');
+    }
+
+    let delay = 60 + Math.random() * 70;
+    if (char === '，' || char === '、') delay = 220;
+    if (char === '。' || char === '：') delay = 500;
+    scheduleNextOngoingChar(delay);
   }
 
   function resumeChatgptThinking() {
     scheduleNextCotStep(600);
+    scheduleNextOngoingChar(120);
   }
 
   // --------------------------------------------------------------------------
