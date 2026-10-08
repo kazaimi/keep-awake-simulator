@@ -7,3 +7,8 @@ __pycache__/
 Thumbs.db
 .opencode/
 
+# 运行时产物
+keepawake.log
+_stdout.txt
+_stderr.txt
+
