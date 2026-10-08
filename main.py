@@ -41,6 +41,9 @@ CONFIG = {
     "idle_gate_ms": 1500,     # 系统空闲超过该值才发脉冲，避免干扰真实用户操作
     "verbose": False,
     "log_file": None,
+    # 企微窗口消息投递（验证/修复「企微只认自己窗口活跃度」这一假设）
+    "wecom_poke": True,
+    "wecom_interval": 60.0,   # 企微阈值为 15 分钟，60 秒一次已远超所需
 }
 
 DIAG = {
@@ -52,6 +55,14 @@ DIAG = {
     "screensaver_disabled": False,
     "session_locked": False,
     "notes": [],
+    "wecom": {
+        "enabled": CONFIG["wecom_poke"],
+        "window_count": None,
+        "last_posted": None,
+        "last_result_ago_sec": None,
+        "foreground_kept": None,
+        "last_error": None,
+    },
 }
 
 
@@ -233,6 +244,32 @@ def poke_active():
     return moved
 
 
+def poke_wecom():
+    """
+    向企业微信窗口投递悬停消息，刷新其内部活跃时间戳。
+    不抢前台，不会破坏屏幕上正在显示的界面。
+    """
+    if not CONFIG["wecom_poke"]:
+        return
+    try:
+        import wecom_poke
+        r = wecom_poke.poke_once()
+        w = DIAG["wecom"]
+        w["window_count"] = r["window_count"]
+        w["last_posted"] = r["posted"]
+        w["last_result_ago_sec"] = 0.0
+        w["foreground_kept"] = r["foreground_kept"]
+        w["last_error"] = None
+        if r["window_count"] == 0:
+            w["last_error"] = "未枚举到企业微信窗口（可能未运行）"
+        elif CONFIG["verbose"]:
+            log(f"[WeCom] 已向 {r['posted']}/{r['window_count']} 个企微窗口投递消息 "
+                f"(前台保持={'是' if r['foreground_kept'] else '否'})")
+    except Exception as e:
+        DIAG["wecom"]["last_error"] = str(e)
+        note(f"企微窗口投递异常: {e}")
+
+
 def keep_awake_loop():
     """
     保活守护主循环
@@ -255,6 +292,9 @@ def keep_awake_loop():
         poke_active()
         time.sleep(0.15)
 
+    # 启动时立即向企微窗口投递一次消息（覆盖「只认自己窗口活跃度」这一假设）
+    poke_wecom()
+
     if is_session_locked():
         note("启动时会话处于锁定状态：此状态下企业微信必然显示「离开电脑」。"
              "请先解锁进入桌面，再保持本程序运行。")
@@ -263,6 +303,7 @@ def keep_awake_loop():
     anchor = None
     DIAG["guard_mode"] = False
     last_log = 0.0
+    last_wecom = 0.0  # 立即做一次企微窗口投递
 
     def read_cursor():
         p = POINT()
@@ -304,7 +345,12 @@ def keep_awake_loop():
                 DIAG["guard_mode"] = False
                 time.sleep(0.4)
 
+            # 企微窗口消息投递：独立于光标脉冲，按自己的节奏走
             now = time.time()
+            if now - last_wecom >= CONFIG["wecom_interval"]:
+                last_wecom = now
+                poke_wecom()
+
             if CONFIG["verbose"] and now - last_log >= 5:
                 last_log = now
                 DIAG["samples"].append({
@@ -385,6 +431,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
                 "cursor_move_verified": DIAG["cursor_move_verified"],
                 "guard_mode": DIAG.get("guard_mode", False),
                 "screensaver_disabled": DIAG["screensaver_disabled"],
+                "wecom": DIAG["wecom"],
                 "session_locked": is_session_locked(),
                 "pulse_interval": CONFIG["pulse_interval"],
                 "idle_gate_ms": CONFIG["idle_gate_ms"],
@@ -472,6 +519,13 @@ def parse_args(argv):
                 pass
         elif a == "--no-ui":
             CONFIG["no_ui"] = True
+        elif a == "--no-wecom":
+            CONFIG["wecom_poke"] = False
+        elif a.startswith("--wecom-interval="):
+            try:
+                CONFIG["wecom_interval"] = max(5.0, float(a.split("=", 1)[1]))
+            except ValueError:
+                pass
 
 
 def main():
@@ -498,6 +552,8 @@ def main():
     app_url = f"http://127.0.0.1:{server_port}/index.html"
     log(f"[KeepAwake] 服务地址: {app_url}")
     log(f"[KeepAwake] 脉冲间隔: {CONFIG['pulse_interval']}s   空闲触发阈值: {CONFIG['idle_gate_ms']}ms")
+    log(f"[KeepAwake] 企微窗口投递: {'已启用' if CONFIG['wecom_poke'] else '已关闭'}  "
+        f"(间隔 {CONFIG['wecom_interval']}s)")
     log(f"[KeepAwake] 诊断接口: {app_url.replace('index.html', '')}api/diagnostics")
     log("[KeepAwake] 提示: F11 全屏 / 空格 老板键 / 1~6 切换模式")
     log("=" * 64)

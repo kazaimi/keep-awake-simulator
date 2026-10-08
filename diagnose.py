@@ -132,6 +132,14 @@ def main():
         print(f"    守护模式       : {'✅ 已开启（高频保活中）' if diag.get('guard_mode') else '⚠️ 未开启（检测到你正在使用电脑，属正常）'}")
         print(f"    光标脉冲有效   : {'✅' if diag.get('cursor_move_verified') else '❌ 无效'}")
         print(f"    屏保关闭       : {'✅' if diag.get('screensaver_disabled') else '⚠️ 被企业组策略(GPO)拦截'}")
+        w = diag.get("wecom") or {}
+        if w.get("enabled"):
+            print(f"    企微窗口投递   : 已启用，最近一次向 {w.get('last_posted')}/{w.get('window_count')} 个窗口投递")
+            print(f"    前台未被抢占   : {'✅' if w.get('foreground_kept') else '❌ 异常'}")
+            if w.get("last_error"):
+                print(f"    ⚠️ {w['last_error']}")
+        else:
+            print("    企微窗口投递   : 已关闭（--no-wecom）")
         print(f"    运行时长       : {diag.get('uptime_sec')} 秒")
         if diag.get("notes"):
             print("    备注:")
@@ -153,6 +161,16 @@ def main():
                 print(f"    查询失败: {w['error']}")
             else:
                 print(f"    ✅ 进程运行中 PID={w['pid']}  会话名={w['session_name']}  会话ID={w['session_id']}")
+
+    try:
+        import wecom_poke
+        wins, pids = wecom_poke.enumerate_wecom_windows()
+        vis = [w for w in wins if w["visible"]]
+        print(f"    窗口数量: {len(wins)} 个（其中可见 {len(vis)} 个）")
+        for w in vis[:4]:
+            print(f"      · {hex(w['hwnd'])}  {w['class'][:28]:<28} {w['title'][:24]}  {w['width']}x{w['height']}")
+    except Exception as e:
+        print(f"    窗口枚举失败: {e}")
 
     # ---------- 4. 结论 ----------
     print("\n[4] 结论判定")
