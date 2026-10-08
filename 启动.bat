@@ -15,7 +15,7 @@ if %errorlevel% equ 0 (
     echo [OK] 检测到 Python 运行环境，正在启动内核级防锁屏守护进程...
     echo [Tips] 界面启动后可按 F11 切换全屏，按 [空格键] 切换老板键伪装模式。
     echo.
-    python main.py
+    python main.py --verbose
     goto :end
 )
 
