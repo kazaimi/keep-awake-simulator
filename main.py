@@ -22,10 +22,6 @@ SPI_SETSCREENSAVETIMEOUT = 0x000F
 SPIF_UPDATEINIFILE = 0x01
 SPIF_SENDCHANGE = 0x02
 
-INPUT_MOUSE = 0
-INPUT_KEYBOARD = 1
-MOUSEEVENTF_MOVE = 0x0001
-MOUSEEVENTF_ABSOLUTE = 0x8000
 KEYEVENTF_KEYUP = 0x0002
 VK_F15 = 0x7E
 
@@ -51,7 +47,7 @@ DIAG = {
     "samples": [],
     "last_idle_ms": None,
     "last_poke_ms": None,
-    "cursor_move_verified": None,
+    "input_pulse_ok": None,
     "screensaver_disabled": False,
     "session_locked": False,
     "notes": [],
@@ -69,40 +65,8 @@ DIAG = {
 # ---------------------------------------------------------------------------
 # ctypes 结构定义
 # ---------------------------------------------------------------------------
-class POINT(ctypes.Structure):
-    _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
-
-
 class LASTINPUTINFO(ctypes.Structure):
     _fields_ = [("cbSize", wintypes.UINT), ("dwTime", wintypes.DWORD)]
-
-
-class MOUSEINPUT(ctypes.Structure):
-    _fields_ = [
-        ("dx", wintypes.LONG),
-        ("dy", wintypes.LONG),
-        ("mouseData", wintypes.DWORD),
-        ("dwFlags", wintypes.DWORD),
-        ("time", wintypes.DWORD),
-        ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong)),
-    ]
-
-
-class KEYBDINPUT(ctypes.Structure):
-    _fields_ = [
-        ("wVk", wintypes.WORD),
-        ("wScan", wintypes.WORD),
-        ("dwFlags", wintypes.DWORD),
-        ("time", wintypes.DWORD),
-        ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong)),
-    ]
-
-
-class INPUT(ctypes.Structure):
-    class _U(ctypes.Union):
-        _fields_ = [("mi", MOUSEINPUT), ("ki", KEYBDINPUT)]
-    _anonymous_ = ("u",)
-    _fields_ = [("type", wintypes.DWORD), ("u", _U)]
 
 
 def log(msg):
@@ -206,42 +170,26 @@ def is_session_locked():
 
 def poke_active():
     """
-    发送一次保活脉冲（多通道冗余，确保任何一种检测机制都能被刷新）：
-      1. SetCursorPos 绝对像素位移 + 回位（可回读校验是否真的移动）
-      2. SendInput 相对移动 +3 / -3 成对下发（净位移为 0，绝不会累积漂移）
-      3. keybd_event 无害按键 F15
-      返回是否成功让光标真实移动
+    发送一次保活脉冲 —— 仅使用键盘事件，**完全不影响鼠标指针**。
+
+    实测依据：
+      · 发一个无害的 F15 按下/释放后，GetLastInputInfo 的空闲值立即从
+        4844ms 归零到 0ms（GetLastInputInfo 同时统计键盘与鼠标输入）。
+      · 整个过程中光标坐标保持不变，鼠标不会被程序移动。
+
+    早期版本曾用 SetCursorPos 做 ±4px 微抖动来重置空闲值，但那会让
+    鼠标在屏幕上可见地漂移，是错误的实现方式，已彻底移除。
     """
-    moved = False
     try:
-        pt = POINT()
-        if user32.GetCursorPos(ctypes.byref(pt)):
-            ox, oy = pt.x, pt.y
-            # 4 像素足够穿透 EPP 死区，且肉眼几乎不可见
-            user32.SetCursorPos(ox + 4, oy)
-            time.sleep(0.02)
-            chk = POINT()
-            if user32.GetCursorPos(ctypes.byref(chk)) and chk.x != ox:
-                moved = True
-            user32.SetCursorPos(ox, oy)
-
-        # SendInput 冗余通道：成对下发，净位移为 0
-        extra = ctypes.c_ulong(0)
-        for dx in (3, -3):
-            inp = INPUT(type=INPUT_MOUSE)
-            inp.mi = MOUSEINPUT(dx=dx, dy=0, mouseData=0,
-                                dwFlags=MOUSEEVENTF_MOVE, time=0,
-                                dwExtraInfo=ctypes.pointer(extra))
-            user32.SendInput(1, ctypes.byref(inp), ctypes.sizeof(INPUT))
-            time.sleep(0.01)
-
-        # 无害按键 F15（按下+释放），不会触发任何快捷键
+        # VK_F15 是 Windows 保留功能键，系统未绑定任何默认快捷键，
+        # 不会被任何常用软件截获。
         user32.keybd_event(VK_F15, 0, 0, 0)
-        time.sleep(0.01)
+        time.sleep(0.02)
         user32.keybd_event(VK_F15, 0, KEYEVENTF_KEYUP, 0)
+        return True
     except Exception as e:
         note(f"poke_active 异常: {e}")
-    return moved
+        return False
 
 
 def poke_wecom():
@@ -274,14 +222,14 @@ def keep_awake_loop():
     """
     保活守护主循环
     ------------------------------------------------------------------
-    设计要点（解决「离开后必须 idle<500ms 才恢复」这类严苛判定）：
-      * 平时不做任何注入，绝不干扰你正常使用鼠标。
-      * 当检测到系统空闲超过 idle_gate_ms → 进入「守护模式」。
-      * 守护模式下以 pulse_interval(默认350ms) 不间断脉冲，
-        使 GetLastInputInfo 的空闲值恒定 < 500ms，
-        无论对方多久轮询一次、阈值多严苛，都永远判不出「离开」。
-      * 只有检测到「光标被真实用户移动」（偏移超过 8px，且不是我们自己造成的）
-        才退出守护模式，交还控制权。
+    设计要点：
+      * **完全不移动鼠标指针**。早期版本用 SetCursorPos 做 ±4px 微抖动来
+        重置系统空闲值，这会导致鼠标在屏幕上可见地漂移，是错误的实现方式，
+        现已彻底删除，全部改用键盘事件。
+      * 只有检测到系统空闲超过 idle_gate_ms 才发脉冲，你正常用电脑时
+        程序完全静默，不会有任何输入注入。
+      * 空闲时以 pulse_interval(默认350ms) 发一次无害的 F15 键，
+        使 GetLastInputInfo 的空闲值恒定 < 500ms。
     """
     global running
     set_keep_awake()
@@ -300,44 +248,24 @@ def keep_awake_loop():
              "请先解锁进入桌面，再保持本程序运行。")
 
     guard = False
-    anchor = None
     DIAG["guard_mode"] = False
     last_log = 0.0
     last_wecom = 0.0  # 立即做一次企微窗口投递
-
-    def read_cursor():
-        p = POINT()
-        if user32.GetCursorPos(ctypes.byref(p)):
-            return (p.x, p.y)
-        return None
 
     while running:
         try:
             set_keep_awake()
 
-            cur = read_cursor()
             idle = get_idle_ms()
             DIAG["last_idle_ms"] = idle
 
-            if cur is not None:
-                # 用户真实活动检测：光标明显偏离锚点 → 退出守护模式
-                # 容差 25px，规避偶发的系统/驱动级 1~2px 抖动
-                if guard and anchor is not None:
-                    if abs(cur[0] - anchor[0]) > 25 or abs(cur[1] - anchor[1]) > 25:
-                        guard = False
-                        anchor = cur
-                        log("[Guard] 检测到真实用户操作，已释放鼠标控制")
-                elif not guard:
-                    anchor = cur
-
             if not guard and idle >= CONFIG["idle_gate_ms"]:
                 guard = True
-                anchor = cur if cur is not None else read_cursor()
-                log("[Guard] 进入守护模式（用户空闲），开始高频保活脉冲")
+                log("[Guard] 进入守护模式（用户空闲），开始保活脉冲")
 
             if guard:
-                moved = poke_active()
-                DIAG["cursor_move_verified"] = moved
+                ok = poke_active()
+                DIAG["input_pulse_ok"] = ok
                 DIAG["last_poke_ms"] = time.time()
                 DIAG["guard_mode"] = True
                 time.sleep(CONFIG["pulse_interval"])
@@ -428,7 +356,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
                 "last_idle_ms": DIAG["last_idle_ms"],
                 "last_poke_ago_sec": (round(time.time() - DIAG["last_poke_ms"], 1)
                                       if DIAG["last_poke_ms"] else None),
-                "cursor_move_verified": DIAG["cursor_move_verified"],
+                "input_pulse_ok": DIAG["input_pulse_ok"],
                 "guard_mode": DIAG.get("guard_mode", False),
                 "screensaver_disabled": DIAG["screensaver_disabled"],
                 "wecom": DIAG["wecom"],

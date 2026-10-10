@@ -130,7 +130,7 @@ def main():
     if diag:
         print(f"    服务端口       : {port}")
         print(f"    守护模式       : {'✅ 已开启（高频保活中）' if diag.get('guard_mode') else '⚠️ 未开启（检测到你正在使用电脑，属正常）'}")
-        print(f"    光标脉冲有效   : {'✅' if diag.get('cursor_move_verified') else '❌ 无效'}")
+        print(f"    保活脉冲       : {'✅ 正常（纯键盘事件，不移动鼠标）' if diag.get('input_pulse_ok') else '⚠️ 未触发或无效'}")
         print(f"    屏保关闭       : {'✅' if diag.get('screensaver_disabled') else '⚠️ 被企业组策略(GPO)拦截'}")
         w = diag.get("wecom") or {}
         if w.get("enabled"):
@@ -178,7 +178,7 @@ def main():
         print("    根因 = 会话已锁屏。任何输入模拟都无效，必须保持桌面解锁状态。")
     elif rdp:
         print("    根因 = 远程桌面会话。请改用物理机，或用 tscon 切回控制台会话。")
-    elif diag and diag.get("guard_mode") and diag.get("cursor_move_verified") and 0 <= idle < 500:
+    elif diag and diag.get("guard_mode") and diag.get("input_pulse_ok") and 0 <= idle < 500:
         print("    保活链路完全正常（idle<500ms 且光标脉冲生效）。")
         print("    → 若企微仍显示离开，说明企微并非依据 GetLastInputInfo 判定，")
         print("      而是自身心跳/服务端状态。此时请在企微「设置-通用」中检查")
